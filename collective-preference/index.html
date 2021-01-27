@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Collective Preference</title>
+    <script src="https://unpkg.com/mathjs@9.0.0/lib/browser/math.js"></script>
+    <script src="markov.js"></script>
+  </head>
+  <body>
+    <form id="form">
+      Options (e.g. A, B, C):
+        <input type="text" name="options" value="A, B, C">
+        <br>
+      Votes (e.g. A, B, C | B, A, C):
+        <input type="text" name="votes" value="A,B,C|A,C,B|B,A,C">
+        <br>
+      <input type="submit" value="Compute">
+    </form>
+
+    <script>
+    let form = document.getElementById('form');
+    form.onsubmit = () => {
+      event.preventDefault();
+      let options = document.getElementsByName("options")[0].value.split(",");
+      let votes = document.getElementsByName("votes")[0].value.split("|");
+      let markov = new Markov(options);
+      for (let vote of votes) {
+        vote = vote.split(",");
+        markov.addVote(...vote);
+      }
+      markov.seal();
+      let preference = markov.getPreference(1e-3);
+      let list = document.createElement("ul");
+      for (let i = 0; i < options.length; ++i) {
+        let item = list.appendChild(document.createElement("li"));
+        let textNode = document.createTextNode(
+          `${options[i].trim()}: ${parseFloat(preference.subset(math.index(i, 0))) * 100}\%`);
+        item.appendChild(textNode);
+      }
+      document.body.appendChild(document.createElement("br"));
+      document.body.appendChild(document.createElement("br"));
+      document.body.appendChild(
+        document.createTextNode("Collective Preference:"));
+      document.body.appendChild(document.createElement("br"));
+      document.body.appendChild(list);
+    }
+    </script>
+  </body>
+</html>
