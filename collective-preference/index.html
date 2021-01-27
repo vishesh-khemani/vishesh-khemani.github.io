@@ -5,17 +5,22 @@
     <title>Collective Preference</title>
     <script src="https://unpkg.com/mathjs@9.0.0/lib/browser/math.js"></script>
     <script src="collective-preference.js"></script>
+    <script src="https://github.com/mdaines/viz.js/releases/download/v2.1.2/viz.js"></script>
+    <script src="https://github.com/mdaines/viz.js/releases/download/v2.1.2/full.render.js"></script>
   </head>
   <body>
     <form id="form">
-      Options (e.g. A, B, C):
+      Options (comma-separated e.g. A, B, C):<br>
         <input type="text" name="options" value="A, B, C">
-        <br>
-      Votes (e.g. A, B, C | B, A, C):
-        <input type="text" name="votes" value="A,B,C|A,C,B|B,A,C">
-        <br>
+        <br><br>
+      Votes ('|' separated with each vote in decreasing order of preference
+      e.g. A,B,C|A,B,C|B,C,A):<br>
+        <input type="text" name="votes" size="100" value="A,B,C|A,C,B|B,A,C">
+        <br><br>
       <input type="submit" value="Compute">
+      <br><br>
     </form>
+    <div id="result"></div>
 
     <script>
     let form = document.getElementById('form');
@@ -34,15 +39,25 @@
         let item = list.appendChild(document.createElement("li"));
         let percent = parseFloat(preference.subset(math.index(i, 0))) * 100;
         let textNode = document.createTextNode(
-          `${options[i].trim()}: ${percent}\%`);
+          `${options[i].trim()}: ${percent.toFixed(1)}\%`);
         item.appendChild(textNode);
       }
-      document.body.appendChild(document.createElement("br"));
-      document.body.appendChild(document.createElement("br"));
-      document.body.appendChild(
-        document.createTextNode("Collective Preference:"));
-      document.body.appendChild(document.createElement("br"));
-      document.body.appendChild(list);
+      let result = document.getElementById("result");
+      result.innerHTML = "";
+      result.appendChild(
+        document.createTextNode("Collective Preference (based on "
+          + `${collectivePreference.getNumVotes()} votes):`));
+      result.appendChild(document.createElement("br"));
+      result.appendChild(list);
+
+      let viz = new Viz();
+      viz.renderSVGElement(
+          collectivePreference.getVotesDigraph())
+            .then(element => {
+              result.appendChild(element);
+              result.appendChild(document.createElement("hr"));
+            })
+            .catch(error => console.error(error));
     }
     </script>
   </body>
