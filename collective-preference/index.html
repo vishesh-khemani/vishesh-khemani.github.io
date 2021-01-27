@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Collective Preference</title>
-    <script src="https://unpkg.com/mathjs@9.0.0/lib/browser/math.js"></script>
-    <script src="markov.js"></script>
+    <script src="collective-preference.js"></script>
   </head>
   <body>
     <form id="form">
@@ -23,18 +22,18 @@
       event.preventDefault();
       let options = document.getElementsByName("options")[0].value.split(",");
       let votes = document.getElementsByName("votes")[0].value.split("|");
-      let markov = new Markov(options);
+      let collectivePreference = new CollectivePreference(options);
       for (let vote of votes) {
         vote = vote.split(",");
-        markov.addVote(...vote);
+        collectivePreference.addVote(...vote);
       }
-      markov.seal();
-      let preference = markov.getPreference(1e-3);
+      let preference = collectivePreference.getPreference(1e-3);
       let list = document.createElement("ul");
       for (let i = 0; i < options.length; ++i) {
         let item = list.appendChild(document.createElement("li"));
+        let percent = parseFloat(preference.subset(math.index(i, 0))) * 100;
         let textNode = document.createTextNode(
-          `${options[i].trim()}: ${parseFloat(preference.subset(math.index(i, 0))) * 100}\%`);
+          `${options[i].trim()}: ${percent}\%`);
         item.appendChild(textNode);
       }
       document.body.appendChild(document.createElement("br"));
