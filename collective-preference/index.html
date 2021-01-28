@@ -10,13 +10,20 @@
   </head>
   <body>
     <form id="form">
-      Options (comma-separated e.g. A, B, C):<br>
-        <input type="text" name="options" value="A, B, C">
-        <br><br>
-      Votes ('|' separated with each vote in decreasing order of preference
-      e.g. A,B,C|A,B,C|B,C,A):<br>
-        <input type="text" name="votes" size="100" value="A,B,C|A,C,B|B,A,C">
-        <br><br>
+      Options (newline-separated):<br>
+      <textarea rows="5" cols="80" id="options" name="options">
+A
+B
+C
+      </textarea>
+      <br><br>
+      Votes (newline-separated, each vote comma-separated in decreasing preference order):<br>
+      <textarea id="votes" name="votes" rows="5" cols="80">
+A, B, C
+A, C, B
+B, A, C
+      </textarea>
+      <br><br>
       <input type="submit" value="Compute">
       <br><br>
     </form>
@@ -26,8 +33,8 @@
     let form = document.getElementById('form');
     form.onsubmit = () => {
       event.preventDefault();
-      let options = document.getElementsByName("options")[0].value.split(",");
-      let votes = document.getElementsByName("votes")[0].value.split("|");
+      let options = document.getElementsByName("options")[0].value.split(/\r|\n/);
+      let votes = document.getElementsByName("votes")[0].value.split(/\r|\n/);
       let collectivePreference = new CollectivePreference(options);
       for (let vote of votes) {
         vote = vote.split(",");
@@ -35,11 +42,11 @@
       }
       let preference = collectivePreference.getPreference(1e-3);
       let list = document.createElement("ul");
-      for (let i = 0; i < options.length; ++i) {
+      for (let i = 0; i < collectivePreference.getItems().length; ++i) {
         let item = list.appendChild(document.createElement("li"));
         let percent = parseFloat(preference.subset(math.index(i, 0))) * 100;
         let textNode = document.createTextNode(
-          `${options[i].trim()}: ${percent.toFixed(1)}\%`);
+          `${collectivePreference.getItems()[i]}: ${percent.toFixed(1)}\%`);
         item.appendChild(textNode);
       }
       let result = document.getElementById("result");

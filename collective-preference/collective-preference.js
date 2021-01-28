@@ -6,18 +6,22 @@ class CollectivePreference {
     this.itemsByIndex_ = [];
     let index = 0;
     for (let item of items_iterable) {
-      this.itemsByName_.set(item.trim(), index++);
-      this.itemsByIndex_.push(item.trim());
+      let trimmed = item.trim();
+      if (trimmed == "") {
+        continue;
+      }
+      this.itemsByName_.set(trimmed, index++);
+      this.itemsByIndex_.push(trimmed);
     }
     this.numItems_ = this.itemsByName_.size;
-    console.log(this.itemsByIndex_);
+    console.log(`${this.numItems_}: ${this.itemsByIndex_}`);
     this.votes_ = math.zeros(this.itemsByName_.size, this.itemsByName_.size);
     this.numVotes_ = 0;
   }
 
   addVote(...items_descending) {
     if (items_descending.length < 2) {
-      throw new Error("At least 2 items are needed in a vote.");
+      return;
     }
     let vote = math.zeros(this.numItems_, this.numItems_);
     for (let i = 0; i < (items_descending.length - 1); ++i) {
@@ -79,6 +83,10 @@ class CollectivePreference {
 
   getNumVotes() {
     return this.numVotes_;
+  }
+
+  getItems() {
+    return this.itemsByIndex_;
   }
 
   getVotesDigraph() {
