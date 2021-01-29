@@ -5,6 +5,7 @@
     <title>Collective Preference</title>
     <script src="https://unpkg.com/mathjs@9.0.0/lib/browser/math.js"></script>
     <script src="collective-preference.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://github.com/mdaines/viz.js/releases/download/v2.1.2/viz.js"></script>
     <script src="https://github.com/mdaines/viz.js/releases/download/v2.1.2/full.render.js"></script>
   </head>
@@ -27,8 +28,12 @@ B, A, C
       <input type="submit" value="Compute">
       <br><br>
     </form>
-    <div id="result"></div>
-
+    <table>
+      <tr>
+        <td><div id="chart_div"></div></td>
+        <td><div id="graph_div"></div></td>
+      </tr>
+    </table>
     <script>
     let form = document.getElementById('form');
     form.onsubmit = () => {
@@ -40,29 +45,37 @@ B, A, C
         vote = vote.split(",");
         collectivePreference.addVote(...vote);
       }
+
       let preference = collectivePreference.getPreference(1e-3);
-      let list = document.createElement("ul");
-      for (let i = 0; i < collectivePreference.getItems().length; ++i) {
-        let item = list.appendChild(document.createElement("li"));
-        let percent = parseFloat(preference.subset(math.index(i, 0))) * 100;
-        let textNode = document.createTextNode(
-          `${collectivePreference.getItems()[i]}: ${percent.toFixed(1)}\%`);
-        item.appendChild(textNode);
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+        let data = new google.visualization.DataTable();
+        data.addColumn('string', 'Item');
+        data.addColumn('number', 'Weight');
+        for (let i = 0; i < collectivePreference.getItems().length; ++i) {
+          let item = collectivePreference.getItems()[i];
+          let weight = parseFloat(preference.subset(math.index(i, 0)));
+          data.addRow([item, weight]);
+        }
+        let options = {'title':'Relative Weights',
+                       'width':400,
+                       'height':300};
+
+        let chart = new google.visualization.PieChart(
+          document.getElementById('chart_div'));
+
+        chart.draw(data, options);
       }
-      let result = document.getElementById("result");
-      result.innerHTML = "";
-      result.appendChild(
-        document.createTextNode("Collective Preference (based on "
-          + `${collectivePreference.getNumVotes()} votes):`));
-      result.appendChild(document.createElement("br"));
-      result.appendChild(list);
 
       let viz = new Viz();
       viz.renderSVGElement(
           collectivePreference.getVotesDigraph())
             .then(element => {
-              result.appendChild(element);
-              result.appendChild(document.createElement("hr"));
+              graph = document.getElementById('graph_div');
+              graph.innerHTML = "";
+              graph.appendChild(document.createTextNode("Aggregated Votes"));
+              graph.appendChild(element);
             })
             .catch(error => console.error(error));
     }
