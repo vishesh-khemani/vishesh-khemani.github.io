@@ -20,6 +20,7 @@ class CollectivePreference {
   }
 
   addVote(...items_descending) {
+    console.log(`addVote(${items_descending})`);
     if (items_descending.length < 2) {
       return;
     }
@@ -92,13 +93,14 @@ class CollectivePreference {
   getVotesDigraph() {
     let result = `digraph {\n`;
     result += "  layout = circo;\n";
-    result += `  {rank = max ${this.itemsByIndex_[0]}};\n`;
-    result += `  {rank = min ${this.itemsByIndex_[this.numItems_ - 1]}};\n`;
+    result += `  {rank = max "${this.itemsByIndex_[0]}"};\n`;
+    result += `  {rank = min "${this.itemsByIndex_[this.numItems_ - 1]}"};\n`;
     for (let i = 0; i < this.numItems_; ++i) {
       if (i == (this.numItems_ - 1)) {
-        result += `  ${this.itemsByIndex_[i]}->${this.itemsByIndex_[0]}`
+        result += `  "${this.itemsByIndex_[i]}" -> "${this.itemsByIndex_[0]}"`;
       } else {
-        result += `  ${this.itemsByIndex_[i]}->${this.itemsByIndex_[i + 1]}`;
+        result +=
+          `  "${this.itemsByIndex_[i]}" -> "${this.itemsByIndex_[i + 1]}"`;
       }
       result += `[style = "invis"];\n`;
     }
@@ -108,7 +110,7 @@ class CollectivePreference {
         if (weight != 0) {
           let from = this.itemsByIndex_[c];
           let to = this.itemsByIndex_[r];
-          result += `  ${from} -> ${to} [label = ${weight.toFixed(2)}];\n`
+          result += `  "${from}" -> "${to}" [label = ${weight.toFixed(2)}];\n`
         }
       }
     }
