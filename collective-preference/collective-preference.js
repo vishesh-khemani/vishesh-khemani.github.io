@@ -19,17 +19,40 @@ class CollectivePreference {
     this.numVotes_ = 0;
   }
 
-  addVote(...items_descending) {
-    console.log(`addVote(${items_descending})`);
-    if (items_descending.length < 2) {
+  getItemAndWeight(entry) {
+    let elems = entry.split(":");
+    let item = elems[0].trim();
+    let weight = (elems.length == 2 ? parseFloat(elems[1]) : -1);
+    return [item, weight];
+  }
+
+  addVote(...entries) {
+    console.log(`addVote(${entries})`);
+    if (entries.length < 2) {
       return;
     }
     let vote = math.zeros(this.numItems_, this.numItems_);
-    for (let i = 0; i < (items_descending.length - 1); ++i) {
-      for (let j = i + 1; j < items_descending.length; ++j) {
-        let row = this.itemsByName_.get(items_descending[i].trim());
-        let col = this.itemsByName_.get(items_descending[j].trim());
-        vote.subset(math.index(row, col), 1);
+    for (let i = 0; i < (entries.length - 1); ++i) {
+      let [item1, weight1] = this.getItemAndWeight(entries[i]);
+      for (let j = i + 1; j < entries.length; ++j) {
+        let [item2, weight2] = this.getItemAndWeight(entries[j]);
+        let row, col, deltaWeight;
+        if (weight1 > weight2) {
+          row = this.itemsByName_.get(item1);
+          col = this.itemsByName_.get(item2);
+          deltaWeight = weight1 - weight2;
+        } else if (weight2 > weight1) {
+          row = this.itemsByName_.get(item2);
+          col = this.itemsByName_.get(item1);
+          deltaWeight = weight2 - weight1;
+        } else if (weight1 == -1) {
+          row = this.itemsByName_.get(item1);
+          col = this.itemsByName_.get(item2);
+          deltaWeight = 1;
+        } else {
+          continue;
+        }
+        vote.subset(math.index(row, col), deltaWeight);
       }
     }
     this.votes_ = math.add(this.votes_, vote);

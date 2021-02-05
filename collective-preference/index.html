@@ -18,10 +18,15 @@ B
 C
       </textarea>
       <br><br>
-      Votes (newline-separated, each vote comma-separated in decreasing preference order):<br>
+      Votes (newline-separated).<br>
+      Each vote is one of the following:<br>
+      1. Comma-separated options in decreasing preference order.<br>
+      2. Comma-separated option:weight entries.<br>
+      (Caution: if specifying weights, 2 votes will have equal say iff the sum
+      of weights is the same for each of them)<br>
       <textarea id="votes" name="votes" rows="5" cols="80">
 A, B, C
-A, C, B
+A:5, C:4, B:1
 B, A, C
       </textarea>
       <br><br>
