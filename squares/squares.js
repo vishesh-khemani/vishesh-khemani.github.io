@@ -8,8 +8,9 @@ function isSquare(n) {
 function order(orderedBeginning, unorderedEnd) {
   if (unorderedEnd.length == 1) {
     let first = orderedBeginning[0];
+    let penultimate = orderedBeginning[orderedBeginning.length - 1];
     let last = unorderedEnd[0];
-    if (isSquare(first + last)) {
+    if (isSquare(first + last) && isSquare(penultimate + last)) {
       return orderedBeginning.concat(unorderedEnd);
     } else {
       return [];
