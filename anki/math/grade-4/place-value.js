@@ -30,7 +30,8 @@ function placeValue(numDigits) {
     <input type="text" name="answer" value=""><br>
     <input type="submit" value="Check">
   </form>`;
-  return html;
+  
+  document.getElementById('front').innerHTML = html;
 }
 
 function checkAnswer(correctAnswer) {
