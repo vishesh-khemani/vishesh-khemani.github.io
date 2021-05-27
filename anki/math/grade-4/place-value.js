@@ -26,11 +26,11 @@ function placeValue(numDigits) {
   // Question.
   let html = `What is the digit at the ${placeStrings[place]} place in ${num}?\n`;
   html += `
-  <form id="answerForm">
+  <form id="answerForm" onsubmit="event.preventDefault(); checkAnswer(${digits[place]});">
     <input type="text" name="answer" value=""><br>
     <input type="submit" value="Check">
   </form>`;
-  return [html, digits[place]];
+  return html;
 }
 
 function checkAnswer(correctAnswer) {
@@ -44,13 +44,5 @@ function checkAnswer(correctAnswer) {
   document.getElementById('checkAnswer').innerHTML = html;
 }
 
-let correctAnswer = '';
-let html = '';
-[html, correctAnswer] = placeValue(4);
+let html = placeValue(4);
 document.getElementById('front').innerHTML = html;
-let form = document.getElementById('answerForm');
-form.elements.answer.focus();
-form.onsubmit = () => {
-  event.preventDefault();
-  checkAnswer(correctAnswer);
-};
