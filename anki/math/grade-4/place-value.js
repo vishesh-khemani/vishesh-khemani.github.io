@@ -44,5 +44,5 @@ function checkAnswer(correctAnswer) {
   document.getElementById('checkAnswer').innerHTML = html;
 }
 
-// let html = placeValue(4);
-// document.getElementById('front').innerHTML = html;
+let html = placeValue(4);
+document.getElementById('front').innerHTML = html;
