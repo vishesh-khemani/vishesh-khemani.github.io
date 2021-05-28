@@ -10,7 +10,7 @@ function randomIntInRange(minInclusive, maxExclusive) {
 function randomIntWithNDigits(numDigits) {
   digits = [];
   for (let i = 0; i < numDigits; ++i) {
-    let digit = (i == 0 ? randomInt(1, 10) : randomInt(0, 10));
+    let digit = (i == 0 ? randomIntInRange(1, 10) : randomIntInRange(0, 10));
     digits.push(digit);
   }
   let num = 0;

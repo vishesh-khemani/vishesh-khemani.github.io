@@ -5,7 +5,7 @@ function placeValue(numDigits) {
                       'hundred thousands', 'millions', 'ten millions',
                       'hundred millions'];
   [num, digits] = randomIntWithNDigits(numDigits);
-  let place = randomIntInrange(0, numDigits);
+  let place = randomIntInRange(0, numDigits);
 
   // Question.
   let html = `What is the digit at the ${placeStrings[place]} place in ` +
