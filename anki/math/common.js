@@ -9,10 +9,13 @@ function addFormAndDisplay(html, checkFunc) {
       checkFunc(document.forms.answerForm.elements.answer.value);
     let html = '';
     if (isCorrect) {
-      html = `<div style="background-color:green;">Correct!</div>`;
+      html = `<div style="background-color:green;">` +
+             `Correct! It is ${answer}.` +
+             `</div>`;
     } else {
       html = `<div style="background-color:yellow;">` +
-             `Well, I think it is ${answer}</div>`;
+             `Hmm, think again because I think it is ${answer}.` +
+             `</div>`;
     }
     document.getElementById('checkAnswer').innerHTML = html;
     event.preventDefault();

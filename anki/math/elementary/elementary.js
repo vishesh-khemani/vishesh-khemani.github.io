@@ -28,10 +28,15 @@ function piesFraction() {
   let html = `There are <b>${numPies}</b> pies. Each pie is cut into ` +
              `<b>${numSlicesPerPie}</b> equal pieces. You eat ` +
              `<b>${numSlicesPicked}</b> pieces. How much pie did you eat ` +
-             `(as a simplified mixed fraction of a pie)?`;
+             `(as a fraction of a pie)?`;
 
   addFormAndDisplay(html, (guess) => {
-    return [guess === answer.toFraction(true), answer.toFraction(true)];
+    let isCorrect = false;
+    try {
+      let f = math.fraction(guess);
+      isCorrect = f.equals(answer);
+    }
+    return [isCorrect, answer.toFraction(true)];
   });
 }
 
