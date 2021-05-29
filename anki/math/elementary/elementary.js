@@ -35,8 +35,9 @@ function piesFraction() {
     try {
       let f = math.fraction(guess);
       isCorrect = f.equals(answer);
+    } finally {
+      return [isCorrect, answer.toFraction(true)];
     }
-    return [isCorrect, answer.toFraction(true)];
   });
 }
 
