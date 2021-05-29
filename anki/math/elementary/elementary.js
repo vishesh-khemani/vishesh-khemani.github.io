@@ -41,30 +41,66 @@ function piesFraction() {
   });
 }
 
+function equivalentFractions() {
+  let n1 = randomIntInRange(1, 13);
+  let d1 = randomIntInRange(1, 13);
+  let gcd = math.gcd(n1, d1);
+  if (gcd > 1) {
+    n2 = n1 / gcd;
+    d2 = d1 / gcd;
+  } else {
+    let a = randomIntInRange(2, 6);
+    n2 = n1 * a;
+    d2 = d1 * a;
+  }
+  switch (randomIntInRange(0, 4)) {
+    case 0:
+      ans = n1;
+      n1 = '?';
+      break;
+    case 1:
+      ans = d1;
+      d1 = '?';
+      break;
+    case 2:
+      ans = n2;
+      n2 = '?';
+      break;
+    case 3:
+      ans = d2;
+      d2 = '?';
+      break;
+  }
+
+  let html = `<b>${n1}/${d1}</b> = <b>${n2}/${d2}</b>`;
+  addFormAndDisplay(html, (guess) => {
+    return [guess == ans, ans];
+  });
+}
+
 function compareFractions(sameNumerator, sameDenominator) {
   // Params.
   let d1 = randomIntInRange(1, 13);
   let d2 = (sameDenominator ? d1 : randomIntInRange(1, 13));
   let n1 = randomIntInRange(1, 13);
   let n2 = (sameNumerator ? n1 : randomIntInRange(1, 13));
-  let f1 = math.fraction(n1, d1);
-  let f2 = math.fraction(n2, d2);
 
   // Question.
-  let html = `Consider the two fractions <b>${f1.toFraction()}</b> and ` +
-             `<b>${f2.toFraction()}</b>. ` +
+  let html = `Consider the two fractions <b>${n1}/${d1}</b> and ` +
+             `<b>${n2}/${d2}</b>. ` +
              `Is the first fraction '>', '=', or '<' compared to the second ` +
              `fraction?`;
 
   addFormAndDisplay(html, (guess) => {
-    let a = f1.compare(f2);
+    let f1 = math.fraction(n1, d1);
+    let f2 = math.fraction(n2, d2);
     switch (f1.compare(f2)) {
       case 0:
         return [guess == '=', '='];
       case -1:
         return [guess == '<', '<'];
       case 1:
-        returb [guess == '>', '>'];
+        return [guess == '>', '>'];
     }
   });
 }
