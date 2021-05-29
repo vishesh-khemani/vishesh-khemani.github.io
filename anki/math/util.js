@@ -15,7 +15,7 @@ function randomIntWithNDigits(numDigits) {
   }
   let num = 0;
   for (let i = 0; i < numDigits; ++i) {
-    num = num + Math.pow(10, i) * digits[i];
+    num = num + Math.pow(10, numDigits - i - 1) * digits[i];
   }
   return [num, digits];
 }
