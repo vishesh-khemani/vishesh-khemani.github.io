@@ -114,3 +114,32 @@ function rotateAroundOrigin(numPoints) {
     return [ans == guess, ans];
   })
 }
+
+function dilateAtOrigin(numPoints) {
+  let scale = (Math.random() < 0.5 ? randomIntInRange(2, 5) : 0.5);
+  let ans = '';
+  let points = [];
+  for (let i = 0; i < numPoints; ++i) {
+    let p = new Point(randomIntInRange(-5, 6), randomIntInRange(-5, 6));
+    points.push(p);
+    let pImage = p.dilateAtOrigin(scale);
+    ans = ans + `(${pImage.x()}, ${pImage.y()}) `;
+  }
+  ans = ans.trim();
+
+  let html = `<div align="left";>` +
+             `Dilate the following:<br>` +
+             `<ol>`;
+  for (let i = 0; i < numPoints; ++i) {
+    html = html + `<li>(${points[i].x()}, ${points[i].y()})</li> `
+  }
+  html = html + `</ol>` +
+                `By <i>${scale}</i>, centered at the origin.<br><br>` +
+                `Express the answer in the form <i>(x1, y1) (x2 y2) ...</i>` +
+                `</div>`;
+
+  addFormAndDisplay(html, (guess) => {
+    guess = guess.trim();
+    return [ans == guess, ans];
+  })
+}
