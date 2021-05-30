@@ -25,3 +25,42 @@ function getDigits(n) {
   }
   return digits;
 }
+
+class Point {
+  constructor(x, y) {
+    this.x_ = x;
+    this.y_= y;
+  }
+
+  x() {
+    return this.x_;
+  }
+
+  y() {
+    return this.y_;
+  }
+
+  translate(by) {
+    return new Point(this.x() + by.x(), this.y() + by.y());
+  }
+
+  reflectAcrossHorizontal(shift) {
+    return new Point(this.x(), 2 * shift - this.y());
+  }
+
+  reflectAcrossVertical(shift) {
+    return new Point(2 * shift - this.x(), this.y());
+  }
+
+  rotateAroundOrigin(num90Counter) {
+    let p = new Point(this.x(), this.y());
+    for (let i = 0; i < num90Counter; ++i) {
+      p = new Point(-p.y(), p.x());
+    }
+    return p;
+  }
+
+  dilateAtOrigin(scale) {
+    return new Point(scale * this.x(), scale * this.y());
+  }
+}
