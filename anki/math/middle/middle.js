@@ -84,3 +84,33 @@ function reflectAcrossVertical(numPoints) {
     return [ans == guess, ans];
   })
 }
+
+function rotateAroundOrigin(numPoints) {
+  let num90Counter = randomIntInRange(1, 4);
+  let ans = '';
+  let points = [];
+  for (let i = 0; i < numPoints; ++i) {
+    let p = new Point(randomIntInRange(-5, 6), randomIntInRange(-5, 6));
+    points.push(p);
+    let pImage = p.rotateAroundOrigin(num90Counter);
+    ans = ans + `(${pImage.x()}, ${pImage.y()}) `;
+  }
+  ans = ans.trim();
+
+  let html = `<div align="left";>` +
+             `Rotate the following:<br>` +
+             `<ol>`;
+  for (let i = 0; i < numPoints; ++i) {
+    html = html + `<li>(${points[i].x()}, ${points[i].y()})</li> `
+  }
+  html = html + `</ol>` +
+                `Counterclockwise about the origin by ` +
+                `<i>${num90Counter * 90} degrees</i>.<br><br>` +
+                `Express the answer in the form <i>(x1, y1) (x2 y2) ...</i>` +
+                `</div>`;
+
+  addFormAndDisplay(html, (guess) => {
+    guess = guess.trim();
+    return [ans == guess, ans];
+  })
+}
