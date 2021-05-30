@@ -8,14 +8,20 @@ function randomIntInRange(minInclusive, maxExclusive) {
 }
 
 function randomIntWithNDigits(numDigits) {
-  digits = [];
-  for (let i = 0; i < numDigits; ++i) {
-    let digit = (i == 0 ? randomIntInRange(1, 10) : randomIntInRange(0, 10));
-    digits.push(digit);
-  }
   let num = 0;
   for (let i = 0; i < numDigits; ++i) {
-    num = num + Math.pow(10, numDigits - i - 1) * digits[i];
+    let digit = (i == (numDigits - 1) ?
+                 randomIntInRange(1, 10) : randomIntInRange(0, 10));
+    num = num + Math.pow(10, i) * digit;
   }
-  return [num, digits];
+  return num;
+}
+
+function getDigits(n) {
+  let digits = [];
+  while (n > 0) {
+    digits.push(n % 10);
+    n = Math.floor(n / 10);
+  }
+  return digits;
 }

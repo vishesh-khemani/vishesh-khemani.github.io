@@ -4,7 +4,8 @@ function placeValue(numDigits) {
   let placeStrings = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands',
                       'hundred thousands', 'millions', 'ten millions',
                       'hundred millions'];
-  [num, digits] = randomIntWithNDigits(numDigits);
+  let num = randomIntWithNDigits(numDigits);
+  let digits = getDigits(num);
   let place = randomIntInRange(Math.max(0, numDigits - 3), numDigits);
 
   // Question.
@@ -12,7 +13,7 @@ function placeValue(numDigits) {
              `in <b>${num.toLocaleString()}</b>?\n`;
 
   addFormAndDisplay(html, (guess) => {
-    let answer = digits[numDigits - place -1];
+    let answer = digits[place];
     return [answer == guess, answer];
   })
 }
@@ -120,6 +121,32 @@ function multiplyByPowersOfTen(p) {
 function divideByPowersOfTen(p) {
   let b = Math.pow(10, p);
   let a = randomIntInRange(1, Math.max(1_000, b * 10));
+  let rem = a % b;
+  let ans = `${Math.floor(a / b)}R${rem}`;
+
+  let html = `What is <b>${a.toLocaleString()}</b> / <b>${b}</b> ` +
+             `(in the form <i>&ltquot&gt</i>R<i>&ltrem&gt</i>)?`;
+
+  addFormAndDisplay(html, (guess) => {
+    return [guess == ans, ans];
+  });
+}
+
+function multiplyNDigitsByMDigits(n, m) {
+  let a = randomIntWithNDigits(n);
+  let b = randomIntWithNDigits(m);
+  let ans = a * b;
+
+  let html = `What is <b>${a.toLocaleString()}</b> x <b>${b}</b>?`;
+
+  addFormAndDisplay(html, (guess) => {
+    return [guess == ans, ans];
+  });
+}
+
+function divideNDigitsByMDigits(n, m) {
+  let a = randomIntWithNDigits(n);
+  let b = randomIntWithNDigits(m);
   let rem = a % b;
   let ans = `${Math.floor(a / b)}R${rem}`;
 
