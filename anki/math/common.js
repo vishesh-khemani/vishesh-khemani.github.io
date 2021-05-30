@@ -1,9 +1,10 @@
 function addFormAndDisplay(html, checkFunc) {
   html += `<form id="answerForm">\n` +
-          `  <input type="text" name="answer" value="">` +
+          `  <input type="text" name="answer" id="answer" value="">` +
           `  <input type="submit" value="Check">\n` +
           `</form>`;
   document.getElementById('front').innerHTML = html;
+  document.getElementById('answer').focus();
   document.getElementById('answerForm').onsubmit = (event) => {
     [isCorrect, answer] =
       checkFunc(document.forms.answerForm.elements.answer.value);
@@ -18,6 +19,7 @@ function addFormAndDisplay(html, checkFunc) {
              `</div>`;
     }
     document.getElementById('checkAnswer').innerHTML = html;
+    document.getElementById('answer').blur();
     event.preventDefault();
   }
 }
