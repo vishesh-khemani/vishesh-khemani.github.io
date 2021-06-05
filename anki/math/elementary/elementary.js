@@ -1,21 +1,21 @@
 // Requires util.js and common.js.
 
 function placeValue(numDigits) {
-  let placeStrings = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands',
-                      'hundred thousands', 'millions', 'ten millions',
-                      'hundred millions'];
-  let num = randomIntWithNDigits(numDigits);
-  let digits = getDigits(num);
-  let place = randomIntInRange(Math.max(0, numDigits - 3), numDigits);
+  if (!areParamsDefined()) {
+    let n = randomIntWithNDigits(numDigits);
+    let p = randomIntInRange(Math.max(0, numDigits - 3), numDigits);
 
-  // Question.
-  let html = `What is the digit at the <b>${placeStrings[place]}</b> place ` +
-             `in <b>${num.toLocaleString()}</b>?\n`;
+    let placeStrings = ['ones', 'tens', 'hundreds', 'thousands',
+                        'ten thousands', 'hundred thousands', 'millions',
+                        'ten millions', 'hundred millions'];
+    addQuestion(`What is the digit at the <b>${placeStrings[p]}</b> place ` +
+                `in <b>${n.toLocaleString()}</b>?`);
 
-  addFormAndDisplay(html, (guess) => {
-    let answer = digits[place];
-    return [answer == guess, answer];
-  })
+    let digits = getDigits(n);
+    addAnswer(digits[p]);
+  }
+  displayQuestion();
+  displayAnswer();
 }
 
 function piesFraction() {

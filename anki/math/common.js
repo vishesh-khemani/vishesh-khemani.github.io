@@ -1,3 +1,30 @@
+function areParamsDefined() {
+  return window["params"] != undefined;
+}
+
+function addQuestion(questionHTML) {
+  if (!areParamsDefined()) {
+    window.params = {};
+  }
+  window.params["question"] = questionHTML;
+}
+
+function addAnswer(answerHTML) {
+  if (!areParamsDefined()) {
+    window.params = {};
+  }
+  window.params["answer"] = answerHTML;
+}
+
+function displayQuestion() {
+  document.getElementById('front').innerHTML = window.params["question"];
+}
+
+function displayAnswer() {
+  document.getElementById('back').innerHTML = `The correct answer is <b>` +
+                                              `${window.params["answer"]}</b>`;
+}
+
 function addFormAndDisplay(html, checkFunc) {
   html += `<form id="answerForm">\n` +
           `  <input type="text" name="answer" id="answer" value="">` +
