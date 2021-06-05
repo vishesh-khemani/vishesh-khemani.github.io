@@ -150,3 +150,73 @@ function divideNDigitsByMDigits(n, m) {
   }
   displayQuestion();
 }
+
+function convertToBase10(numDigits, fromBase) {
+  if (!areParamsDefined()) {
+    let n = randomIntWithNDigits(numDigits, fromBase);
+    let digits = getDigits(n, fromBase);
+    let numInBase = '';
+    for (let i = numDigits; i > 0; --i) {
+      numInBase += `${digits[i - 1]}`;
+    }
+    addQuestion(`What is the <b>base-${fromBase}</b> number ` +
+                `<b>${numInBase}</b> in base 10?`);
+    addAnswer(n);
+  }
+  displayQuestion();
+}
+
+function addInBase(numDigits, base) {
+  if (!areParamsDefined()) {
+    let n1 = randomIntWithNDigits(numDigits, base);
+    let digits1 = getDigits(n1, base);
+    let n1InBase = '';
+    for (let i = numDigits; i > 0; --i) {
+      n1InBase += `${digits1[i - 1]}`;
+    }
+    let n2 = randomIntWithNDigits(numDigits, base);
+    let digits2 = getDigits(n2, base);
+    let n2InBase = '';
+    for (let i = numDigits; i > 0; --i) {
+      n2InBase += `${digits2[i - 1]}`;
+    }
+    addQuestion(`What is the sum of the <b>base-${base}</b> numbers ` +
+                `<b>${n1InBase}</b> and <b>${n2InBase}</b> in base-${base}?`);
+    let ansDigits = getDigits(n1 + n2, base);
+    let ans = '';
+    for (let i = ansDigits.length; i > 0; --i) {
+      ans += `${ansDigits[i - 1]}`;
+    }
+    ans += `in base-${base}`;
+    addAnswer(ans);
+  }
+  displayQuestion();
+}
+
+function subtractInBase(numDigits, base) {
+  if (!areParamsDefined()) {
+    let n1 = randomIntWithNDigits(numDigits, base);
+    let digits1 = getDigits(n1, base);
+    let n1InBase = '';
+    for (let i = numDigits; i > 0; --i) {
+      n1InBase += `${digits1[i - 1]}`;
+    }
+    let n2 = randomIntInRange(0, n1);
+    let digits2 = getDigits(n2, base);
+    let n2InBase = '';
+    for (let i = digits2.length; i > 0; --i) {
+      n2InBase += `${digits2[i - 1]}`;
+    }
+    addQuestion(`What is the difference between the <b>base-${base}</b> ` +
+                `numbers <b>${n1InBase}</b> and <b>${n2InBase}</b> in ` +
+                `base-${base}?`);
+    let ansDigits = getDigits(n1 - n2, base);
+    let ans = '';
+    for (let i = ansDigits.length; i > 0; --i) {
+      ans += `${ansDigits[i - 1]}`;
+    }
+    ans += ` in base-${base}`;
+    addAnswer(ans);
+  }
+  displayQuestion();
+}
