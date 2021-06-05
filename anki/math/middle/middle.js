@@ -45,9 +45,9 @@ function reflectAcrossHorizontal(numPoints) {
     html = html + `</ol>` +
                   `Across the line <i>y = ${shift}</i>.`;
     addQuestion(html);
-    addAnswer();
+    addAnswer(ans);
   }
-  displayQuestion(ans);
+  displayQuestion();
 }
 
 function reflectAcrossVertical(numPoints) {
