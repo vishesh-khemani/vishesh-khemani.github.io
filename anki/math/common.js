@@ -23,6 +23,7 @@ function displayQuestion() {
 function displayAnswer() {
   document.getElementById('back').innerHTML = `The correct answer is <b>` +
                                               `${window.params["answer"]}</b>`;
+  delete window.params;
 }
 
 function addFormAndDisplay(html, checkFunc) {

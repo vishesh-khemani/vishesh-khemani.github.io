@@ -15,7 +15,6 @@ function placeValue(numDigits) {
     addAnswer(digits[p]);
   }
   displayQuestion();
-  displayAnswer();
 }
 
 function piesFraction() {
