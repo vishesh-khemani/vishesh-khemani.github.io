@@ -128,3 +128,55 @@ function dilateAtOrigin(numPoints) {
   }
   displayQuestion();
 }
+
+function supplementaryAngles() {
+  if (!areParamsDefined()) {
+    let a = randomIntInRange(1, 180);
+    let html = `Angles APE and BPE are supplementary. ` +
+               `The angle <b>APE</b> is <b>${a}</b> degrees. ` +
+               `What is the angle <b>BPE</b>?`
+    addQuestion(html);
+    addAnswer(`${180 - a} degrees`);
+  }
+  displayQuestion();
+}
+
+function complementaryAngles() {
+  if (!areParamsDefined()) {
+    let a = randomIntInRange(1, 90);
+    let html = `Angles ABP and CBP are complementary. ` +
+               `The angle <b>ABP</b> is <b>${a}</b> degrees. ` +
+               `What is the angle <b>CBP</b>?`
+    addQuestion(html);
+    addAnswer(`${90 - a} degrees`);
+  }
+  displayQuestion();
+}
+
+function anglesInSlashedParallelLines() {
+  if (!areParamsDefined()) {
+    let angles = new Map();
+    let a = randomIntInRange(1, 90);
+    angles.set('EPB', a);
+    angles.set('APQ', angles.get('EPB'));  // opposite
+    angles.set('APE', 180 - angles.get('EPB'));  // supplementary
+    angles.set('BPQ', angles.get('APE'));  // opposite
+    angles.set('PQD', angles.get('EPB'));  // corresponding
+    angles.set('CQF', angles.get('PQD'));
+    angles.set('CQP', angles.get('APE'));
+    angles.set('DQF', angles.get('BPQ'));
+    let keys = Array.from(angles.keys());
+    let given = keys[randomIntInRange(0, angles.size)];
+    let find = given;
+    while (find === given) {
+      find = keys[randomIntInRange(0, angles.size)];
+    }
+    let html = `AB and CD are parallel lines. ` +
+               `The line EF intersects AB at P and CD at Q. ` +
+               `The angle <b>${given}</b> is <b>${a}</b> degrees. ` +
+               `Find the angles <b>${find}</b>.`
+    addQuestion(html);
+    addAnswer(`${angles.get(find)} degrees`);
+  }
+  displayQuestion();
+}
