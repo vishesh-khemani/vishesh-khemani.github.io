@@ -173,8 +173,9 @@ function anglesInSlashedParallelLines() {
     }
     let html = `AB and CD are parallel lines. ` +
                `The line EF intersects AB at P and CD at Q. ` +
-               `The angle <b>${given}</b> is <b>${a}</b> degrees. ` +
-               `Find the angles <b>${find}</b>.`
+               `The angle <b>${given}</b> is <b>${angles.get(given)}</b> ` +
+               `degrees. Find the angle <b>${find}</b>.<br>\n` +
+               `<img src='./slashed-parallel-lines.png' width=200>`
     addQuestion(html);
     addAnswer(`${angles.get(find)} degrees`);
   }
