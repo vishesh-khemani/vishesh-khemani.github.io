@@ -181,3 +181,37 @@ function anglesInSlashedParallelLines() {
   }
   displayQuestion();
 }
+
+function fractionToRepeatedDecimal() {
+  if (!areParamsDefined()) {
+    let numerator = randomIntInRange(1, 100);
+    let denominator = 1;
+    while (numerator % denominator == 0) {
+      denominator = Math.pow(3, randomIntInRange(0, 2)) *
+                    Math.pow(7, randomIntInRange(0, 2)) *
+                    Math.pow(11, randomIntInRange(0, 1));
+    }
+    let f = math.fraction(numerator, denominator);
+    let html = `Express <b>${numerator}/${denominator}</b> as a decimal.`
+    addQuestion(html);
+    addAnswer(`${f.toString()}`);
+  }
+  displayQuestion();
+}
+
+function repeatedDecimalToFraction() {
+  if (!areParamsDefined()) {
+    let numerator = randomIntInRange(1, 100);
+    let denominator = 1;
+    while (numerator % denominator == 0) {
+      denominator = Math.pow(3, randomIntInRange(0, 2)) *
+                    Math.pow(7, randomIntInRange(0, 2)) *
+                    Math.pow(11, randomIntInRange(0, 1));
+    }
+    let f = math.fraction(numerator, denominator);
+    let html = `Express <b>${f.toString()}</b> as a fraction.`
+    addQuestion(html);
+    addAnswer(`${f.toFraction(true)}`);
+  }
+  displayQuestion();
+}
