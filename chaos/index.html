@@ -11,39 +11,59 @@
   google.charts.load('current', {'packages':['corechart']});
   google.charts.setOnLoadCallback(drawChart);
   function drawChart() {
-    let data = new google.visualization.DataTable();
-    data.addColumn('number', 'r');
-    data.addColumn('number', 'x');
 
-   let x0 = math.fraction(1, 2);
-   for (let numerator = 2500; numerator < 4000; numerator++) {
-     let r = math.fraction(numerator, 1000);
-     let x0 = math.fraction(1, 3);
-     let seq = iterate(1000, r, x0).slice(-100);
-     for (let i = 0; i < seq.length; ++i) {
-       data.addRow([r.valueOf(), seq[i]]);
-     }
-   }
-   for (let numerator = 500; numerator < 510; numerator++) {
-     let r = math.fraction(37, 10);
-     let x0 = math.fraction(numerator, 1_000);
-     let seq = iterate(1000, r, x0).slice(-8);
-     console.log(`${x0.valueOf().toFixed(4)}: ${seq}`);
-   }
-   var options = {
-          title: 'Terminal Values',
-          hAxis: {title: 'r', minValue: 1, maxValue: 4},
-          vAxis: {title: 'x', minValue: 0, maxValue: 1},
-          width: 640,
-          height: 1280,
-          pointSize: 1,
-          legend: 'none'
-        };
+   // let x0 = math.fraction(1, 2);
+   // for (let numerator = 2500; numerator < 4000; numerator++) {
+   //   let r = math.fraction(numerator, 1000);
+   //   let x0 = math.fraction(1, 3);
+   //   let seq = iterate(1000, r, x0).slice(-100);
+   //   for (let i = 0; i < seq.length; ++i) {
+   //     data.addRow([r.valueOf(), seq[i]]);
+   //   }
+   // }
+   // for (let numerator = 500; numerator < 510; numerator++) {
+   //   let r = math.fraction(37, 10);
+   //   let x0 = math.fraction(numerator, 1_000);
+   //   let seq = iterate(1000, r, x0).slice(-8);
+   //   console.log(`${x0.valueOf().toFixed(4)}: ${seq}`);
+   // }
 
-    let chart = new google.visualization.ScatterChart(
-      document.getElementById('chart_div'));
 
-    chart.draw(data, options);
+   //let r = math.fraction(301, 100);
+   let r = math.fraction(370, 100);
+   let init_x1 = math.fraction(501, 1000);
+   let x1 = init_x1;
+   let init_x2 = math.fraction(502, 1000);
+   let x2 = init_x2;
+   let i = 0;
+   setInterval(() => {
+     x1 = map(r, x1);
+     x2 = map(r, x2);
+     let delta = math.subtract(x1, x2).valueOf().toFixed(6);
+     let data = new google.visualization.DataTable();
+     data.addColumn('number', 'x1');
+     data.addColumn('number', 'x2');
+     data.addRow([init_x1.valueOf(), x1.valueOf()]);
+     data.addRow([init_x2.valueOf(), x2.valueOf()]);
+     ++i;
+
+        var options = {
+               title: `i=${i}, delta=${delta}`,
+               hAxis: {title: 'initial value', minValue: 0.500, maxValue: 0.503},
+               vAxis: {title: 'subsequent values', minValue: 0, maxValue: 1},
+               width: 640,
+               height: 1280,
+               pointSize: 4,
+               legend: 'none'
+             };
+
+         let chart = new google.visualization.ScatterChart(
+           document.getElementById('chart_div'));
+
+         chart.draw(data, options);
+   }, 1000);
+
+
   }
  </script>
 </body>
