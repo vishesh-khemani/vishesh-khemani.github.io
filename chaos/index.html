@@ -21,47 +21,54 @@
    //     data.addRow([r.valueOf(), seq[i]]);
    //   }
    // }
-   // for (let numerator = 500; numerator < 510; numerator++) {
-   //   let r = math.fraction(37, 10);
-   //   let x0 = math.fraction(numerator, 1_000);
-   //   let seq = iterate(1000, r, x0).slice(-8);
-   //   console.log(`${x0.valueOf().toFixed(4)}: ${seq}`);
-   // }
+   let numRainy = 0;
+   let numNonRainy = 0;
+   for (let numerator = 500000; numerator < 510000; numerator++) {
+     let r = math.fraction(37, 10);
+     let x0 = math.fraction(numerator, 1_000_000);
+     let seq = iterate(100, r, x0).slice(-1);
+     if (seq[0] > 0.8) {
+       ++numRainy;
+     } else {
+       ++numNonRainy;
+     }
+   }
+   console.log(`After ${numRainy + numNonRainy} sims, chance of rain is ${(numRainy / (numRainy + numNonRainy) * 100).toFixed(0)} percent`);
 
 
-   //let r = math.fraction(301, 100);
-   let r = math.fraction(370, 100);
-   let init_x1 = math.fraction(501, 1000);
-   let x1 = init_x1;
-   let init_x2 = math.fraction(502, 1000);
-   let x2 = init_x2;
-   let i = 0;
-   setInterval(() => {
-     x1 = map(r, x1);
-     x2 = map(r, x2);
-     let delta = math.subtract(x1, x2).valueOf().toFixed(6);
-     let data = new google.visualization.DataTable();
-     data.addColumn('number', 'x1');
-     data.addColumn('number', 'x2');
-     data.addRow([init_x1.valueOf(), x1.valueOf()]);
-     data.addRow([init_x2.valueOf(), x2.valueOf()]);
-     ++i;
-
-        var options = {
-               title: `i=${i}, delta=${delta}`,
-               hAxis: {title: 'initial value', minValue: 0.500, maxValue: 0.503},
-               vAxis: {title: 'subsequent values', minValue: 0, maxValue: 1},
-               width: 640,
-               height: 1280,
-               pointSize: 4,
-               legend: 'none'
-             };
-
-         let chart = new google.visualization.ScatterChart(
-           document.getElementById('chart_div'));
-
-         chart.draw(data, options);
-   }, 1000);
+   // let r = math.fraction(301, 100);
+   // //let r = math.fraction(370, 100);
+   // let x1 = math.fraction(51, 100);
+   // let x2 = math.fraction(52, 100);
+   // let i = 0;
+   // setInterval(() => {
+   //
+   //   let delta = math.subtract(x1, x2).valueOf().toFixed(6);
+   //   let data = new google.visualization.DataTable();
+   //   data.addColumn('number', 'x1');
+   //   data.addColumn('number', 'x2');
+   //   data.addColumn({type:'string', role:'style'}); // annotation role col.
+   //   data.addRow([x1.valueOf(), 0, 'point { fill-color: #a52714; }']);
+   //   data.addRow([x2.valueOf(), 0, 'point { fill-color: #15A0C8; }']);
+   //   ++i;
+   //
+   //      var options = {
+   //             title: `i=${i}, delta=${delta}`,
+   //             hAxis: {title: 'values', minValue: 0, maxValue: 1},
+   //             vAxis: {title: '', minValue: 0, maxValue: 0},
+   //             width: 640,
+   //             height: 200,
+   //             pointSize: 2,
+   //             legend: 'none'
+   //           };
+   //
+   //       let chart = new google.visualization.ScatterChart(
+   //         document.getElementById('chart_div'));
+   //
+   //       chart.draw(data, options);
+   //       x1 = map(r, x1);
+   //       x2 = map(r, x2);
+   // }, 1000);
 
 
   }
