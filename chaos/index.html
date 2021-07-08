@@ -8,8 +8,102 @@
   <div id='chart_div'></div>
  <script>
 
-  google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(drawChart);
+ function drawScatterChart(options, data) {
+   let chart = new google.visualization.ScatterChart(
+     document.getElementById('chart_div'));
+  chart.draw(data, options);
+ }
+
+ function getBouncingBallHeight(h0Meters /* in m */, tSecs /* in s */) {
+   const g = 9.8;  // m / s^2
+   let bounceInterval = Math.sqrt(2 * h0Meters / g);
+   let goingDown = true;
+   while (tSecs > bounceInterval) {
+     tSecs -= bounceInterval;
+     goingDown = !goingDown;
+     if (!goingDown) {
+       h0Meters *= 0.5;
+     }
+     bounceInterval = Math.sqrt(2 * h0Meters / g);
+   }
+   if (goingDown) {
+     return [h0Meters - 0.5 * g * tSecs * tSecs, h0Meters];
+   } else {
+     let v0 = Math.sqrt(2 * g * h0Meters);
+     return [v0 * tSecs - 0.5 * g * tSecs * tSecs, h0Meters];
+   }
+ }
+
+  function animateBouncingBall() {
+    const h0 = 1.0;
+    let tMillis = 0;
+    let frameIntervalMillis = 10;
+    let intervalHandle = setInterval(() => {
+      let [h, hMax] = getBouncingBallHeight(h0, tMillis / 1000);
+      let data = new google.visualization.DataTable();
+      data.addColumn('number', 'x');
+      data.addColumn('number', 'h');
+      data.addRow([0, h]);
+
+      let options = {
+        title: `t=${tMillis} ms`,
+        hAxis: {title: '', minValue: 0, maxValue: 0},
+        vAxis: {title: 'h (in meters)', minValue: -0.1, maxValue: 1.1 * h0, gridlines: 'none'},
+        width: 400,
+        height: 640,
+        legend: 'none'
+      };
+      drawScatterChart(options, data);
+
+      if (hMax < 1e-4) {
+        clearInterval(intervalHandle);
+      }
+      tMillis += frameIntervalMillis;
+    }, 100);
+  }
+
+ function animateBouncingBalls() {
+   const h0_1 = 0.9995;
+   const h0_2 = 1.0000;
+   const h0_3 = 1.0005;
+   let tMillis = 0;
+   let frameIntervalMillis = 10;
+   let intervalHandle = setInterval(() => {
+     let data = new google.visualization.DataTable();
+     data.addColumn('number', 'x');
+     data.addColumn('number', 'h');
+     let [h1, h1Max] = getBouncingBallHeight(h0_1, tMillis / 1000);
+     let [h2, h2Max] = getBouncingBallHeight(h0_2, tMillis / 1000);
+     let [h3, h3Max] = getBouncingBallHeight(h0_3, tMillis / 1000);
+     data.addRow([0, h1]);
+     data.addRow([1, h2]);
+     data.addRow([2, h3]);
+
+     let diff = Math.abs(h1 - h2);
+     diff = Math.max(diff, Math.abs(h1 - h3));
+     diff = Math.max(diff, Math.abs(h2 - h3));
+     diff = (diff * 1000).toFixed(0);
+
+    let options = {
+      title: `t = ${tMillis} ms, max-height-difference = ${diff} mm`,
+      hAxis: {title: '', minValue: 0, maxValue: 2},
+      vAxis: {title: 'h (in meters)', minValue: -0.1, maxValue: 1.1 * h0_2, gridlines: 'none'},
+      width: 640,
+      height: 640,
+      legend: 'none'
+    };
+    drawScatterChart(options, data);
+    if (h1Max < 1e-4) {
+      clearInterval(intervalHandle);
+    }
+    tMillis += frameIntervalMillis;
+  }, 100);
+}
+
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(animateBouncingBalls);
+
+  //google.charts.setOnLoadCallback(drawChart);
   function drawChart() {
 
    // let x0 = math.fraction(1, 2);
