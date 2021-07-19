@@ -12,3 +12,17 @@ function iterate(n, r, x0) {
   }
   return seq;
 }
+
+function getIrrational(prefix, numAdditionalDigits) {
+  let t = prefix;
+  let n = 0;
+  while (t != Math.floor(t)) {
+    t = t * 10;
+    ++n;
+  }
+  let x = prefix;
+  for (let i = 0; i < numAdditionalDigits; ++i) {
+    x = x + Math.floor(Math.random()*10) / Math.pow(10, n + i + 1)
+  }
+  return x;
+}

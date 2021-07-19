@@ -100,8 +100,91 @@
   }, 100);
 }
 
+function getIterate1(x) {
+  return x * 10 - Math.floor(x * 10);
+}
+
+function animateIterates1() {
+  let h1 = getIrrational(0.620895, 10);
+  let h2 = getIrrational(0.620895, 10);
+  let h3 = getIrrational(0.620895, 10);
+  let t = 0;
+  let intervalHandle = setInterval(() => {
+    let data = new google.visualization.DataTable();
+    data.addColumn('number', 'x');
+    data.addColumn('number', 'h');
+    h1 = getIterate1(h1);
+    h2 = getIterate1(h2);
+    h3 = getIterate1(h3);
+    data.addRow([0, h1]);
+    data.addRow([1, h2]);
+    data.addRow([2, h3]);
+
+    let diff = Math.abs(h1 - h2);
+    diff = Math.max(diff, Math.abs(h1 - h3));
+    diff = Math.max(diff, Math.abs(h2 - h3));
+    diff = diff.toFixed(1);
+
+   let options = {
+     title: `t = ${t}, max-difference = ${diff}`,
+     hAxis: {title: '', minValue: 0, maxValue: 2},
+     vAxis: {title: 'x', minValue: -0.1, maxValue: 1.2, gridlines: 'none'},
+     width: 640,
+     height: 640,
+     legend: 'none'
+   };
+   drawScatterChart(options, data);
+   if (t == 14) {
+     clearInterval(intervalHandle);
+   }
+   t++;
+ }, 1000);
+}
+
+function getIterate2(x) {
+  const r = math.fraction(37, 10);
+  return  math.multiply(math.multiply(r, x), math.subtract(math.fraction(1, 1), x));
+}
+
+function animateIterates2() {
+  let h1 = math.fraction(600, 1000);
+  let h2 = math.fraction(601, 1000);
+  let h3 = math.fraction(602, 1000);
+  let t = 0;
+  let intervalHandle = setInterval(() => {
+    let data = new google.visualization.DataTable();
+    data.addColumn('number', 'x');
+    data.addColumn('number', 'h');
+    h1 = getIterate2(h1);
+    h2 = getIterate2(h2);
+    h3 = getIterate2(h3);
+    data.addRow([0, h1.valueOf()]);
+    data.addRow([1, h2.valueOf()]);
+    data.addRow([2, h3.valueOf()]);
+
+    let diff = Math.abs(h1.valueOf() - h2.valueOf());
+    diff = Math.max(diff, Math.abs(h1.valueOf() - h3.valueOf()));
+    diff = Math.max(diff, Math.abs(h2.valueOf() - h3.valueOf()));
+    diff = diff.toFixed(1);
+
+   let options = {
+     title: `t = ${t}, max-difference = ${diff}`,
+     hAxis: {title: '', minValue: 0, maxValue: 2},
+     vAxis: {title: 'x', minValue: -0.1, maxValue: 1.2, gridlines: 'none'},
+     width: 640,
+     height: 640,
+     legend: 'none'
+   };
+   drawScatterChart(options, data);
+   if (t == 30) {
+     clearInterval(intervalHandle);
+   }
+   t++;
+ }, 500);
+}
+
 google.charts.load('current', {'packages':['corechart']});
-google.charts.setOnLoadCallback(animateBouncingBalls);
+google.charts.setOnLoadCallback(animateIterates2);
 
   //google.charts.setOnLoadCallback(drawChart);
   function drawChart() {
