@@ -10,12 +10,12 @@
       Decision Tree:<br>
 
       <textarea rows="10" cols="120" id="nodes" name="nodes">
-Root/Decision 1, d1Val: -100
-Root/Decision 1/Outcome 1, d1o1Val: 10, d1o1Pct: 10
-Root/Decision 1/Outcome 2, d1o2Val: 50, 100 - d1o1Pct
-Root/Decision 2, d2Val: -500
-Root/Decision 2/Outcome 1, d2o1Val: 100, d2o1Pct: 30
-Root/Decision 2/Outcome 2, d2o2Val: 500, 100 - d2o1Pct
+Root/Risky Project, riskyInvestment: -1000
+Root/Risky Project/Success, -riskyInvestment*10, riskySuccessPct: 5
+Root/Risky Project/Failure, riskyFailureValue: 0, 100 - riskySuccessPct
+Root/Safe Project, safeInvestment: -1000
+Root/Safe Project/Success, -safeInvestment*2, safeSuccessPct: 70
+Root/Safe Project/Failure, safeFailureValue: 0, 100 - safeSuccessPct
       </textarea>
       <br><br>
       <input type="submit" value="Evaluate">
