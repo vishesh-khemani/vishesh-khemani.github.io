@@ -1,0 +1,214 @@
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Decision</title>
+    <script src="decision.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+    <form id="tree_spec">
+      Decision Tree:<br>
+
+      <textarea rows="10" cols="120" id="nodes" name="nodes">
+Root/Decision 1, d1Val: -100
+Root/Decision 1/Outcome 1, d1o1Val: 10, d1o1Pct: 10
+Root/Decision 1/Outcome 2, d1o2Val: 50, 100 - d1o1Pct
+Root/Decision 2, d2Val: -500
+Root/Decision 2/Outcome 1, d2o1Val: 100, d2o1Pct: 30
+Root/Decision 2/Outcome 2, d2o2Val: 500, 100 - d2o1Pct
+      </textarea>
+      <br><br>
+      <input type="submit" value="Evaluate">
+    </form>
+    <hr>
+    <table border="1" width="100%">
+      <tr>
+        <td><form id="percents_form"></form></td>
+        <td><form id="values_form"></form></td>
+      </tr>
+      <tr><td colspan=2><div id='tree_div'></div></td></tr>
+      <tr>
+        <td><form id="range_form"></form></td>
+        <td><div id='candle_div'></div></td>
+      </tr>
+    </table>
+    <script>
+
+      function addRows(node, rows) {
+        let displayName = `<b>${node.getName()}</b>`;
+        displayName += `<p style="color:green">value: ${node.valueFn_()}</p>`;
+        if (node.percentFn_ != null) {
+          displayName += `<p style="color:red">percent: ${node.getPercent()}</p>`;
+        }
+        if (node.childrenNodes_.size > 0) {
+          let stats = node.getStats();
+          displayName += `<p style="color:blue; font-weight:bold">`;
+          displayName += `expected: ${stats.expectedValue}</p>`;
+          displayName += `<p style="color:blue">`;
+          displayName += `min: ${stats.minValue}<br>`;
+          displayName += `p90: ${stats.p90Value}<br>`;
+          displayName += `max: ${stats.maxValue}</p>`;
+        }
+
+        rows.push([{'v': node.getFQName(), 'f': displayName}, node.parentNode_.getFQName()]);
+        for (let childNode of node.childrenNodes_) {
+          addRows(childNode, rows);
+        }
+      }
+
+      function drawChart() {
+        let tree_spec = document.getElementsByName("nodes")[0].value.split(/\r|\n/);
+        let decision = new Decision(tree_spec);
+
+        for (let [key, value] of Object.entries(decision.values_)) {
+          decision.values_[key] = parseFloat(document.getElementById('values_form').elements.namedItem(key).value);
+        }
+        for (let [key, value] of Object.entries(decision.percents_)) {
+          decision.percents_[key] = parseFloat(document.getElementById('percents_form').elements.namedItem(key).value);
+        }
+        let minY = parseFloat(document.getElementById('range_form').elements.namedItem('minY').value);
+        let maxY = parseFloat(document.getElementById('range_form').elements.namedItem('maxY').value);
+
+        var candleRows = [];
+        for (let childNode of decision.root_.childrenNodes_.values()) {
+          let stats = childNode.getStats();
+          candleRows.push([childNode.name_, stats.minValue, stats.expectedValue, stats.p90Value, stats.maxValue]);
+        }
+        var candleData = google.visualization.arrayToDataTable(candleRows, true);
+        var candleChart = new google.visualization.CandlestickChart(document.getElementById('candle_div'));
+        var options = {
+          title: 'Line-bottom: min. Line-top: max\nIf solid box, bottom: expected, top: p90. If hollow box, bottom: p90, top: expected.',
+          vAxis: {
+            viewWindow: {
+              min: minY,
+              max: maxY
+            }
+          },
+          legend: 'none'
+        };
+        candleChart.draw(candleData, options);
+
+        var treeData = new google.visualization.DataTable();
+        treeData.addColumn('string', 'Name');
+        treeData.addColumn('string', 'Parent');
+        let treeRows = [];
+        for (let childNode of decision.root_.childrenNodes_) {
+          addRows(childNode, treeRows);
+        }
+        treeData.addRows(treeRows);
+        var treeChart = new google.visualization.OrgChart(document.getElementById('tree_div'));
+        treeChart.draw(treeData, {'allowHtml':true});
+      }
+
+      let form = document.getElementById('tree_spec');
+      form.onsubmit = () => {
+        event.preventDefault();
+        let tree_spec = document.getElementsByName("nodes")[0].value.split(/\r|\n/);
+        let decision = new Decision(tree_spec);
+
+        google.charts.load('current', {packages:["coreChart", "orgchart"]});
+        google.charts.setOnLoadCallback(drawChart);
+
+        let form = document.getElementById('values_form');
+        form.innerHTML = '<h4 style="color:green">Values</h4>';
+        for (let [key, value] of Object.entries(decision.values_)) {
+          let e = document.createElement('label');
+          e.setAttribute('for', key);
+          e.setAttribute('style', 'color:green');
+          e.innerHTML = key;
+          form.appendChild(e);
+
+          e = document.createElement('input');
+          e.setAttribute("type", "range");
+          e.setAttribute("name", key);
+          e.setAttribute("min", Math.min(0, 5 * value));
+          e.setAttribute("max", Math.max(0, 5 * value));
+          e.setAttribute("value", value);
+          e.setAttribute("onchange", "drawChart()");
+          form.appendChild(e);
+
+          e = document.createElement('br');
+          form.appendChild(e);
+        }
+        e = document.createElement('br');
+        form.appendChild(e);
+        form.onsubmit = () => {
+          event.preventDefault();
+        }
+        form = document.getElementById('percents_form');
+        form.innerHTML = '<h4 style="color:red">Percents</h4>';
+        e = document.createElement('h4');
+        e.setAttribute('style', 'color:red');
+        form.appendChild(e);
+        for (let [key, value] of Object.entries(decision.percents_)) {
+          e = document.createElement('label');
+          e.setAttribute('for', key);
+          e.setAttribute('style', 'color:red');
+          e.innerHTML = key;
+          form.appendChild(e);
+
+          e = document.createElement('input');
+          e.setAttribute("type", "range");
+          e.setAttribute("name", key);
+          e.setAttribute("min", 0);
+          e.setAttribute("max", 100);
+          e.setAttribute("step", Math.min(1, value));
+          e.setAttribute("value", value);
+          e.setAttribute("onchange", "drawChart()");
+          form.appendChild(e);
+
+          e = document.createElement('br');
+          form.appendChild(e);
+        }
+        e = document.createElement('br');
+        form.appendChild(e);
+        form.onsubmit = () => {
+          event.preventDefault();
+        }
+
+        form = document.getElementById("range_form");
+        form.innerHTML = '';
+        let minY = null;
+        let maxY = null;
+        for (let childNode of decision.root_.childrenNodes_.values()) {
+          let stats = childNode.getStats();
+          if (minY == null || minY > stats.minValue) {
+            minY = stats.minValue;
+          }
+          if (maxY == null || maxY < stats.maxValue) {
+            maxY = stats.maxValue;
+          }
+        }
+        e = document.createElement('label');
+        e.setAttribute('for', 'minY');
+        e.setAttribute('style', 'color:blue');
+        e.innerHTML = 'minY';
+        form.appendChild(e);
+        e = document.createElement('input');
+        e.setAttribute("type", "text");
+        e.setAttribute("name", "minY");
+        e.setAttribute("value", minY);
+        e.setAttribute("onchange", "drawChart()");
+        form.appendChild(e);
+        e = document.createElement('br');
+        form.appendChild(e);
+        e = document.createElement('label');
+        e.setAttribute('for', 'maxY');
+        e.setAttribute('style', 'color:blue');
+        e.innerHTML = 'maxY';
+        form.appendChild(e);
+        e = document.createElement('input');
+        e.setAttribute("type", "text");
+        e.setAttribute("name", "maxY");
+        e.setAttribute("value", maxY);
+        e.setAttribute("onchange", "drawChart()");
+        form.appendChild(e);
+        e = document.createElement('br');
+        form.appendChild(e);
+        form.onsubmit = () => {
+          event.preventDefault();
+        }
+      }
+    </script>
+  </body>
+</html>
