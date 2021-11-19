@@ -1,0 +1,124 @@
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Bayesian</title>
+    <script src="bayesian.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body
+  <div id='hypothesis_div'>
+    <form id="form_hypothesis">
+      <label for="field_hypothesis">Hypothesis: </label>
+      <input type="text" id="field_hypothesis" name="field_hypothesis" size="80" value="I have cancer"><br><br>
+      <label for="field_prior">Likelihood of hypothesis being true (before considering new evidence): </label>
+      <input type="text" id="field_prior" name="field_prior" value=4>%<br><br>
+      <label for="field_evidence">Evidence: </label>
+      <input type="text" id="field_evidence" name="field_evidence" size="80" value="I tested positive"><br><br>
+      <label for="field_true_likelihood">Likelihood of evidence if the hypothesis is true: </label>
+      <input type="text" id="field_true_likelihood" name="field_true_likelihood" value=92>%<br><br>
+      <label for="field_false_likelihood">Likelihood of evidence if the hypothesis is false: </label>
+      <input type="text" id="field_false_likelihood" name="field_false_likelihood" value=14>%<br><br>
+      <input type="submit" value="Ok"><br><br>
+    </form>
+  </div>
+  <hr>
+  <h3>Results</h3>
+  <div id='chart_div'></div>
+  <div id='result_div'></div>
+
+    <script>
+      let form = document.getElementById('form_hypothesis');
+      form.onsubmit = () => {
+        event.preventDefault();
+
+        google.charts.load('current', {packages:["corechart"]});
+        google.charts.setOnLoadCallback(drawChart);
+      }
+
+      function drawChart() {
+        let total_count = 100;
+        let hypothesis = document.getElementById('field_hypothesis').value;
+        let prior = parseFloat(document.getElementById('field_prior').value);
+        let true_count = prior / 100 * total_count;
+        let false_count = total_count - true_count;
+        let evidence = document.getElementById('field_evidence').value;
+        let true_likelihood = parseFloat(document.getElementById('field_true_likelihood').value);
+        let false_likelihood = parseFloat(document.getElementById('field_false_likelihood').value);
+        if (true_likelihood == 0 || false_likelihood == 0) {
+          alert('Evidence data is incomplete');
+          return;
+        }
+        let evidence_given_true = true_likelihood / 100 * true_count;
+        let evidence_given_false = false_likelihood / 100 * false_count;
+
+        // let rows = [];
+        // rows.push(['Evidence | Hypothesis', evidence_given_true]);
+        // rows.push(['~Evidence | Hypothesis', true_count - evidence_given_true]);
+        // rows.push(['Evidence | ~Hypothesis', evidence_given_false]);
+        // rows.push(['~Evidence | ~Hypothesis', false_count - evidence_given_false]);
+        //
+        // let data = google.visualization.arrayToDataTable(rows, true);
+        // var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        // var options = {
+        //   chartArea:{width:'80%',height:'80%'},
+        //   slices: [{color: 'green'},
+        //             {color: 'lightgreen'},
+        //             {color: 'red'},
+        //             {color: 'pink'}],
+        //   is3D: 'true',
+        // };
+        // chart.draw(data, options);
+
+        let rows = [];
+        let hSpace = 10;
+        let vSpace = hSpace;
+        for (let c = 0; c < 10; c++) {
+          for (let r = 0; r < 10; r++) {
+            let count = c * 10 + r;
+            let tooltip = '';
+            let style = '';
+            if (count < Math.floor(evidence_given_true)) {
+              tooltip = `True positive: '${hypothesis}' (${true_count}) and '${evidence}' (${evidence_given_true.toFixed(1)})`;
+              style = `point {fill-color: green; shape-type: star; size: ${0.8 * hSpace}`;
+            } else if (count < Math.floor(true_count)) {
+              tooltip = `False negative: '${hypothesis}' (${true_count}) but '${evidence}' is False (${(true_count - evidence_given_true).toFixed(1)})`;
+              style = `point {fill-color: green; shape-type: square; size: ${0.8 * hSpace}`;
+            } else if (count < Math.floor(true_count + evidence_given_false)) {
+              tooltip = `False positive: '${hypothesis}' is False (${true_count}) but '${evidence}' is True (${evidence_given_false.toFixed(1)})`;
+              style = `point {fill-color: red; shape-type: star; size: ${0.8 * hSpace}`;
+            } else {
+              tooltip = `True negative: '${hypothesis}' is False (${true_count}) and '${evidence}' is False (${(false_count - evidence_given_false).toFixed(1)})`;
+              style = `point {fill-color: red; shape-type: square; size: ${0.8 * hSpace}`;
+            }
+            let x = c * hSpace;
+            let y = r * vSpace;
+            rows.push([x, y, tooltip, style]);
+          }
+        }
+        let data = new google.visualization.DataTable();
+        data.addColumn('number', 'x');
+        data.addColumn('number', 'y');
+        data.addColumn({type: 'string', role: 'tooltip'});
+        data.addColumn({type: 'string', role: 'style'});
+        data.addRows(rows);
+        let chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+        let options = {
+          hAxis: {minValue: 0, maxValue: hSpace * 10, textPosition: 'none', gridlines: {color: 'white'}, baselineColor: 'white'},
+          vAxis: {minValue: 0, maxValue: hSpace * 10, textPosition: 'none', gridlines: {color: 'white'}, baselineColor: 'white'},
+          legend: 'none',
+        };
+        chart.draw(data, options);
+
+        let posterior = evidence_given_true / (evidence_given_true + evidence_given_false) * 100;
+        let result_div = document.getElementById('result_div');
+        let result = '';
+        result = `Out of a sample of <b>100</b>, '${hypothesis}'' is True for <b>${true_count.toFixed(1)}</b> (green points) and False for <b>${false_count.toFixed(1)}</b> (red points).<br>`;
+        result += `Out of the ${true_count.toFixed(1)} for which '${hypothesis}' is True (green points), '${evidence}' is True for <b>${evidence_given_true.toFixed(1)}</b> (stars) and False for <b>${(true_count - evidence_given_true).toFixed(1)}</b> (squares).<br>`;
+        result += `Out of the ${false_count.toFixed(1)} for which '${hypothesis}' is False (red points), '${evidence}' is True for <b>${evidence_given_false.toFixed(1)}</b> (stars) and False for <b>${(false_count - evidence_given_false).toFixed(1)}</b> (squares).<br>`;
+        result += `<p style="font-size:24px;">The evidence updates the likelihood of the hypothesis being true from <b>${prior}%</b> to <b>${posterior.toFixed(1)}%</b> (green-stars / all-stars).</p>`;
+        result_div.innerHTML = result;
+      }
+
+    </script>
+  </body>
+</html>
