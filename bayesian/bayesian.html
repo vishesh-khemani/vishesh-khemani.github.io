@@ -107,10 +107,10 @@
 
         let iterations = parseFloat(document.getElementById('field_iterations').value);
         rows = [];
-        rows.push([1, prior]);
+        rows.push([0, prior]);
         for (let i = 0; i < iterations; i++) {
           posterior = 100 * get_posterior(prior / 100, (100 - true_likelihood) / 100, false_likelihood / 100);
-          rows.push([i + 2, posterior]);
+          rows.push([i + 1, posterior]);
           prior = posterior;
         }
         result += '<br>';
