@@ -18,13 +18,15 @@
       <input type="text" id="field_true_likelihood" name="field_true_likelihood" value=92>%<br><br>
       <label for="field_false_likelihood">Likelihood of evidence if the hypothesis is false: </label>
       <input type="text" id="field_false_likelihood" name="field_false_likelihood" value=14>%<br><br>
+      <input type="text" id="field_iterations" name="field_iterations" value=10><br><br>
       <input type="submit" value="Ok"><br><br>
     </form>
   </div>
   <hr>
   <h3>Results</h3>
-  <div id='chart_div'></div>
+  <div id='scatter_div'></div>
   <div id='result_div'></div>
+  <div id='line_div'></div>
 
     <script>
       let form = document.getElementById('form_hypothesis');
@@ -33,6 +35,10 @@
 
         google.charts.load('current', {packages:["corechart"]});
         google.charts.setOnLoadCallback(drawChart);
+      }
+
+      function get_posterior(prior, false_negative, false_positive) {
+        return prior * (1.0 - false_negative) / ((1.0 - false_negative) * prior + false_positive * (1.0 - prior));
       }
 
       function drawChart() {
@@ -51,24 +57,6 @@
         let evidence_given_true = true_likelihood / 100 * true_count;
         let evidence_given_false = false_likelihood / 100 * false_count;
 
-        // let rows = [];
-        // rows.push(['Evidence | Hypothesis', evidence_given_true]);
-        // rows.push(['~Evidence | Hypothesis', true_count - evidence_given_true]);
-        // rows.push(['Evidence | ~Hypothesis', evidence_given_false]);
-        // rows.push(['~Evidence | ~Hypothesis', false_count - evidence_given_false]);
-        //
-        // let data = google.visualization.arrayToDataTable(rows, true);
-        // var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-        // var options = {
-        //   chartArea:{width:'80%',height:'80%'},
-        //   slices: [{color: 'green'},
-        //             {color: 'lightgreen'},
-        //             {color: 'red'},
-        //             {color: 'pink'}],
-        //   is3D: 'true',
-        // };
-        // chart.draw(data, options);
-
         let rows = [];
         let hSpace = 10;
         let vSpace = hSpace;
@@ -84,10 +72,10 @@
               tooltip = `False negative: '${hypothesis}' (${true_count}) but '${evidence}' is False (${(true_count - evidence_given_true).toFixed(1)})`;
               style = `point {fill-color: green; shape-type: square; size: ${0.8 * hSpace}`;
             } else if (count < Math.floor(true_count + evidence_given_false)) {
-              tooltip = `False positive: '${hypothesis}' is False (${true_count}) but '${evidence}' is True (${evidence_given_false.toFixed(1)})`;
+              tooltip = `False positive: '${hypothesis}' is False (${false_count}) but '${evidence}' is True (${evidence_given_false.toFixed(1)})`;
               style = `point {fill-color: red; shape-type: star; size: ${0.8 * hSpace}`;
             } else {
-              tooltip = `True negative: '${hypothesis}' is False (${true_count}) and '${evidence}' is False (${(false_count - evidence_given_false).toFixed(1)})`;
+              tooltip = `True negative: '${hypothesis}' is False (${false_count}) and '${evidence}' is False (${(false_count - evidence_given_false).toFixed(1)})`;
               style = `point {fill-color: red; shape-type: square; size: ${0.8 * hSpace}`;
             }
             let x = c * hSpace;
@@ -101,7 +89,7 @@
         data.addColumn({type: 'string', role: 'tooltip'});
         data.addColumn({type: 'string', role: 'style'});
         data.addRows(rows);
-        let chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+        let chart = new google.visualization.ScatterChart(document.getElementById('scatter_div'));
         let options = {
           hAxis: {minValue: 0, maxValue: hSpace * 10, textPosition: 'none', gridlines: {color: 'white'}, baselineColor: 'white'},
           vAxis: {minValue: 0, maxValue: hSpace * 10, textPosition: 'none', gridlines: {color: 'white'}, baselineColor: 'white'},
@@ -109,13 +97,36 @@
         };
         chart.draw(data, options);
 
-        let posterior = evidence_given_true / (evidence_given_true + evidence_given_false) * 100;
+        let posterior = 100 * get_posterior(prior / 100, (100 - true_likelihood) / 100, false_likelihood / 100);
         let result_div = document.getElementById('result_div');
         let result = '';
         result = `Out of a sample of <b>100</b>, '${hypothesis}'' is True for <b>${true_count.toFixed(1)}</b> (green points) and False for <b>${false_count.toFixed(1)}</b> (red points).<br>`;
         result += `Out of the ${true_count.toFixed(1)} for which '${hypothesis}' is True (green points), '${evidence}' is True for <b>${evidence_given_true.toFixed(1)}</b> (stars) and False for <b>${(true_count - evidence_given_true).toFixed(1)}</b> (squares).<br>`;
         result += `Out of the ${false_count.toFixed(1)} for which '${hypothesis}' is False (red points), '${evidence}' is True for <b>${evidence_given_false.toFixed(1)}</b> (stars) and False for <b>${(false_count - evidence_given_false).toFixed(1)}</b> (squares).<br>`;
         result += `<p style="font-size:24px;">The evidence updates the likelihood of the hypothesis being true from <b>${prior}%</b> to <b>${posterior.toFixed(1)}%</b> (green-stars / all-stars).</p>`;
+
+        let iterations = parseFloat(document.getElementById('field_iterations').value);
+        rows = [];
+        rows.push([1, prior]);
+        for (let i = 0; i < iterations; i++) {
+          posterior = 100 * get_posterior(prior / 100, (100 - true_likelihood) / 100, false_likelihood / 100);
+          rows.push([i + 2, posterior]);
+          prior = posterior;
+        }
+        result += '<br>';
+        data = google.visualization.arrayToDataTable(rows, true);
+        chart = new google.visualization.LineChart(document.getElementById('line_div'));
+        options = {
+          legend: 'none',
+          hAxis: {
+            title: 'Iteration of evidence',
+          },
+          vAxis: {
+            title: `% chance that '${hypothesis}' is True`,
+          },
+        };
+        chart.draw(data, options);
+
         result_div.innerHTML = result;
       }
 
