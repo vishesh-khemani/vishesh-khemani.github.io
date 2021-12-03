@@ -25,8 +25,8 @@
   </div>
   <hr>
   <h3>Results</h3>
-  <div id='scatter_div'></div>
   <div id='result_div'></div>
+  <div id='scatter_div'></div>
   <div id='line_div'></div>
 
     <script>
@@ -138,8 +138,8 @@
 
         let posterior = 100 * get_posterior(prior / 100, (100 - true_likelihood) / 100, false_likelihood / 100);
         let result_div = document.getElementById('result_div');
-        let result = '';
-        result = `Out of a sample of <b>100</b>:`;
+        let result = `<p style="font-size:24px;">The evidence updates the likelihood of the hypothesis being true from <b>${prior}%</b> to <b>${formatNumber(posterior)}%</b> (green-stars / all-stars).</p>`;
+        result += `Out of a sample of <b>100</b>:`;
         result += `<ul><li><b>${formatNumber(true_count)}</b> (green shapes) for which '${hypothesis}' is True</li>`;
         result += `<li><b>${100 - formatNumber(true_count)}</b> (red shapes) for which '${hypothesis}' is False</li></ul>`;
         result += `Out of the ${formatNumber(true_count)} for which '${hypothesis}' is True (green shapes):`;
@@ -148,7 +148,6 @@
         result += `Out of the ${formatNumber(false_count)} for which '${hypothesis}' is False (red shapes):`;
         result += `<ul><li><b>${formatNumber(evidence_given_false)}</b> (red stars) for which '${evidence}' is True</li>`;
         result += `<li><b>${formatNumber(false_count - evidence_given_false)}</b> (red squares) for which '${evidence}' is False</li></ul>`;
-        result += `<p style="font-size:24px;">The evidence updates the likelihood of the hypothesis being true from <b>${prior}%</b> to <b>${formatNumber(posterior)}%</b> (green-stars / all-stars).</p>`;
 
         let iterations = parseFloat(document.getElementById('field_iterations').value);
         rows = [];
