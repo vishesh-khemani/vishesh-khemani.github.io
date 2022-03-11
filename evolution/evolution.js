@@ -15,6 +15,10 @@ class IndividualBase {
     throw new Error("not implemented");
   }
 
+  mateWith(_partner) {
+    throw new Error("not implemented");
+  }
+
   mutate() {
     throw new Error("not implemented");
   }
@@ -28,10 +32,6 @@ class CreatorBase {
   }
 
   createIndividual() {
-    throw new Error("not implemented");
-  }
-
-  mate(_p1, _p2) {
     throw new Error("not implemented");
   }
 }
@@ -82,6 +82,66 @@ class Simulator {
     });
   }
 
+  sampleParents() {
+    let numToSelect = Math.floor(
+      this.config_.mateFraction * this.config_.populationSize);
+    if (numToSelect < 2) {
+      throw new Error('Must select atleast 2 parents');
+    }
+    let parents = new Array(numToSelect);
+
+    let weight = function(index) {
+      if (this.population_[this.config_.populationSize - 1] > 0) {
+        return this.population_[index].getFitnessScore();
+      }
+      return 1.0 / (index + 1);
+    }.bind(this);
+
+    let weightTotal = 0;
+    for (let i = 0; i < numToSelect; i++) {
+      weightTotal += weight(i);
+      parents[i] = this.population_[i];
+    }
+    for (let i = numToSelect; i < this.config_.populationSize; i++) {
+      let w = weight(i);
+      weightTotal += w;
+      if (Math.random() < w / weightTotal) {
+        // Replace one item in the reservoir with this individual.
+        let replacementIndex = Math.floor(Math.random() * numToSelect);
+        parents[replacementIndex] = this.population_[i];
+      }
+    }
+
+    return parents;
+  }
+
+  addIndividual(individual) {
+    let fitnessScore = individual.getFitnessScore();
+    if (fitnessScore > this.population_[0].getFitnessScore()) {
+      this.population_.splice(0, 0, individual);
+    } else {
+      for (let i = (this.config_.populationSize - 1); i >= 0; i--) {
+        if (fitnessScore <= this.population_[i].getFitnessScore()) {
+          this.population_.splice(i + 1, 0, individual);
+          break;
+        }
+      }
+    }
+    this.population_.splice(-1, 1);
+  }
+
+  tick() {
+    let parents = this.sampleParents();
+    for (let i = 0; i < parents.length; i = i + 2) {
+      let children = parents[i].mateWith(parents[i + 1]);
+      for (let child of children) {
+        this.addIndividual(child);
+      }
+    }
+  }
+
+  /////////////////////////////////////////////////
+
   elapseOneTimeInterval() {
     // Pick a random 10% of the population to reproduce.
     let indicesSet = new Set();
@@ -118,20 +178,5 @@ class Simulator {
         console.log(`${time}: ${this.population_[0].value} ${newMaxFitnessScore}`);
       }
     } while ((newMaxFitnessScore - maxFitnessScore) > 1e-6 && time < 100);
-  }
-
-  addIndividual(individual) {
-    let fitnessScore = this.life_.getFitnessScore(individual);
-    if (fitnessScore > this.life_.getFitnessScore(this.population_[0])) {
-      this.population_.splice(0, 0, individual);
-    } else {
-      for (let i = (this.populationSize_ - 1); i >= 0; i--) {
-        if (fitnessScore <= this.life_.getFitnessScore(this.population_[i])) {
-          this.population_.splice(i + 1, 0, individual);
-          break;
-        }
-      }
-    }
-    this.population_.splice(-1, 1);
   }
 }
