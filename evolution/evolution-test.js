@@ -1,3 +1,25 @@
+describe("Normal Gen", function() {
+  it("Samples correctly", function() {
+    let gen = createNormalGen(10, 2);
+    let x = [];
+    let num = 1000;
+    let sum = 0;
+    for (let i = 0; i < num; i++) {
+      x.push(gen.next().value);
+      sum = sum + x[i];
+    }
+    let mean = sum / num;
+    assert.closeTo(mean, 10, 0.2);
+
+    sum = 0;
+    for (let i = 0; i < num; i++) {
+      sum = sum + Math.pow((x[i] - mean), 2);
+    }
+    let stddev = Math.sqrt(sum / num);
+    assert.closeTo(stddev, 2, 0.2);
+  });
+});
+
 describe("IndividualBase", function() {
   it("No instantiation", function() {
     assert.throws(() => new IndividualBase());
@@ -40,7 +62,7 @@ describe("Configuration", function() {
 });
 
 describe("Simulator", function() {
-
+  let normalGen = createNormalGen(0, 0.1);
   let nextValueGen = undefined;
   let fitnessFn = undefined;
 
@@ -72,13 +94,12 @@ describe("Simulator", function() {
     mateWith(partner) {
       let children = [];
       let x = (this.x_ + partner.x_) / 2;
-      children.push(new Individual(x).mutate());
-      children.push(new Individual(x).mutate());
+      children.push(new Individual(x));
       return children;
     }
 
     mutate() {
-      this.x_ = this.x_ + (Math.random(0.01) - 0.005);
+      this.x_ = this.x_ + normalGen.next().value;
       if (this.x_ < 0) {
         this.x_ = 0;
       }
@@ -267,20 +288,30 @@ describe("Simulator", function() {
   });
 
   describe("Tick", function() {
-
     it("Adds children and prunes", function() {
       let sim = new Simulator(config, new Creator());
       sim.initialize();
       assert.equal(sim.population_.length, 8);
-      assert.isAbove(Math.abs(sim.population_[0].getValue() - 0.5), 1e-3);
-      do {
-        sim.tick();
-        assert.equal(sim.population_.length, 8);
-        for (let i = 0; i < 8; i++) {
-          assert.isTrue(sim.population_.lastIndexOf(sim.population_[i]) === i);
-        }
-      } while (Math.abs(sim.population_[0].getValue() - 0.5) > 1e-3);
+      sim.tick();
+      assert.equal(sim.population_.length, 8);
+      for (let i = 0; i < 8; i++) {
+        assert.isTrue(sim.population_.lastIndexOf(sim.population_[i]) === i);
+      }
     });
+  });
 
+  describe("Run", function() {
+    it("Converges", function() {
+      let sim = new Simulator(config, new Creator());
+      sim.run();
+      assert.equal(sim.population_.length, 8);
+      sim.tick();
+      assert.equal(sim.population_.length, 8);
+      for (let i = 0; i < 8; i++) {
+        assert.isTrue(sim.population_.lastIndexOf(sim.population_[i]) === i);
+      }
+      assert.closeTo(sim.population_[0].getFitnessScore(), 0.25, 1e-3);
+      assert.isBelow(sim.time_, config.maxGenerations);
+    });
   });
 });

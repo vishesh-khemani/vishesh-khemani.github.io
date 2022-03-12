@@ -1,5 +1,20 @@
 "use strict"
 
+function createNormalGen(mean, stddev) {
+  return function* () {
+    do {
+      // https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+      let u1 = Math.random();
+      let u2 = Math.random();
+      let r = Math.sqrt(-2 * Math.log(u1));
+      let theta = 2 * Math.PI * u2;
+      yield stddev * r * Math.cos(theta) + mean;
+      yield stddev * r * Math.sin(theta) + mean;
+    } while (true);
+
+  }();
+}
+
 class IndividualBase {
   constructor() {
     if (this.constructor === IndividualBase) {
@@ -40,6 +55,8 @@ class Configuration {
   constructor() {
     this.populationSize = 100;
     this.mateFraction =  0.1;
+    this.minGenerations = 10;
+    this.maxGenerations = 10000;
   }
 
   get populationSize() {
@@ -63,6 +80,28 @@ class Configuration {
     }
     this.mateFraction_ = f;
   }
+
+  get minGenerations() {
+    return this.minGenerations_;
+  }
+
+  set minGenerations(n) {
+    if (n < 1) {
+      throw new Error('Must be >= 1');
+    }
+    this.minGenerations_ = n;
+  }
+
+  get maxGenerations() {
+    return this.maxGenerations_;
+  }
+
+  set maxGenerations(n) {
+    if (n < 1) {
+      throw new Error('Must be >= 1');
+    }
+    this.maxGenerations_ = n;
+  }
 }
 
 class Simulator {
@@ -70,6 +109,21 @@ class Simulator {
     this.config_ = config;
     this.creator_ = creator;
     this.population_ = new Array(this.config_.populationSize);
+    this.time_ = 0;
+  }
+
+  run() {
+    this.initialize();
+    let newMax = this.population_[0].getFitnessScore();
+    let prevMax;
+    do {
+      prevMax = newMax;
+      for (let i = 0; i < this.config_.minGenerations; i++) {
+        this.tick();
+      }
+      newMax = this.population_[0].getFitnessScore();
+    } while (
+      this.time_ < this.config_.maxGenerations && (newMax - prevMax) > 1e-3);
   }
 
   initialize() {
@@ -135,10 +189,12 @@ class Simulator {
     for (let i = 0; i < parents.length; i = i + 2) {
       let children = parents[i].mateWith(parents[i + 1]);
       for (let child of children) {
-        this.addIndividual(child);
+        this.addIndividual(child.mutate());
       }
     }
+    this.time_++;
   }
+
 
   /////////////////////////////////////////////////
 
