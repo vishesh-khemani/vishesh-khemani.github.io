@@ -1,51 +1,52 @@
 class Individual {
-  constructor(value) {
+  constructor(isValidFn, fn, value) {
+    this.isValidFn_ = isValidFn;
+    this.fn_ = fn;
+
     if (value === undefined) {
       this.value_ = Math.random();
     } else {
       this.value_ = value;
     }
-    if (value < 0 || value > 1) {
+    if (!this.isValidFn_(this.value_)) {
       throw new Error("invalid value");
     }
+
+    this.normalGen_ = createNormalGen(0, 0.1);
+  }
+
+  getValue() {
+    return this.value_;
+  }
+
+  getFitnessScore() {
+    return this.fn_(this.getValue());
+  }
+
+  mateWith(partner) {
+    let children = new Array(1);
+    children[0] = new Individual(
+      this.isValidFn_, this.fn_, (this.getValue() + partner.getValue()) / 2);
+    return children;
   }
 
   mutate() {
-    let noise = (Math.random() - 0.5) / 100;
-    let value = this.value_ + noise;
-    if (value < 0) {
-      value = 0;
-    } else if (value > 1) {
-      value = 1;
-    }
-    this.value_ = value;
+    let mutatedValue;
+    do {
+      mutatedValue = this.getValue() + this.normalGen_.next().value;
+    } while (!this.isValidFn_(mutatedValue));
+    this.value_ = mutatedValue;
     return this;
-  }
-
-  get value() {
-    return this.value_;
   }
 }
 
-class MyLife {
-  constructor() {
-    this.func_ = function(x) {
-      return x * (1 - x);
-    }
+class Creator {
+  constructor(isValidFn, fn) {
+    this.isValidFn_ = isValidFn;
+    this.fn_ = fn;
   }
 
   createIndividual() {
-    return new Individual();
-  }
-
-  getFitnessScore(individual) {
-    return this.func_(individual.value);
-  }
-
-  reproduce(parent1, parent2) {
-    let x = (parent1.value + parent2.value) / 2;
-    let child1 = (new Individual(x)).mutate();
-    let child2 = (new Individual(x)).mutate();
-    return [child1, child2];
+    return new Individual(this.isValidFn_, this.fn_);
   }
 }
