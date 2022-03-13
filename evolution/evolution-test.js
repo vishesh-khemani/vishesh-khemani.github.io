@@ -20,6 +20,30 @@ describe("Normal Gen", function() {
   });
 });
 
+describe("Real Interval", function() {
+  it("[0, 1)", function() {
+    let interval = new RealInterval(0, 1);
+    for (let i = 0; i < 100; i++) {
+      let x = interval.sample();
+      assert.isTrue(x >= 0 && x < 1, `Bad value: ${x}`);
+      let y = interval.mutate(x);
+      assert.isTrue(y >= 0 && y < 1);
+      assert.closeTo(x, y, 0.1);
+    }
+  });
+
+  it("[-10, 10)", function() {
+    let interval = new RealInterval(-10, 10);
+    for (let i = 0; i < 100; i++) {
+      let x = interval.sample();
+      assert.isTrue(x >= -10 && x < 10, `Bad value: ${x}`);
+      let y = interval.mutate(x);
+      assert.isTrue(y >= -10 && y < 10);
+      assert.closeTo(x, y, 2);
+    }
+  });
+});
+
 describe("IndividualBase", function() {
   it("No instantiation", function() {
     assert.throws(() => new IndividualBase());

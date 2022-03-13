@@ -3,16 +3,53 @@
 function createNormalGen(mean, stddev) {
   return function* () {
     do {
-      // https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
-      let u1 = Math.random();
-      let u2 = Math.random();
-      let r = Math.sqrt(-2 * Math.log(u1));
-      let theta = 2 * Math.PI * u2;
-      yield stddev * r * Math.cos(theta) + mean;
-      yield stddev * r * Math.sin(theta) + mean;
+      yield stddev * standardNormalGen.next().value + mean;
     } while (true);
 
   }();
+}
+
+const standardNormalGen = function* () {
+  do {
+    // https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+    let u1 = Math.random();
+    let u2 = Math.random();
+    let r = Math.sqrt(-2 * Math.log(u1));
+    let theta = 2 * Math.PI * u2;
+    yield r * Math.cos(theta);
+    yield r * Math.sin(theta);
+  } while (true);
+}();
+
+class RealInterval {
+  constructor(minInclusive, maxExclusive) {
+    if (minInclusive >= maxExclusive) {
+      throw new Error("Invalid range");
+    }
+    this.minInclusive_ = minInclusive;
+    this.maxExclusive_ = maxExclusive;
+    this.noiseGen_ = createNormalGen(0, (maxExclusive - minInclusive) / 50);
+  }
+
+  sample() {
+    return this.minInclusive_ +
+      Math.random() * (this.maxExclusive_ - this.minInclusive_);
+  }
+
+  isValid(x) {
+    return this.minInclusive_ <= x && x < this.maxExclusive_;
+  }
+
+  mutate(x) {
+    if (!this.isValid(x)) {
+      throw new Error("Invalid value");
+    }
+    let noise = 0;
+    do {
+      noise = this.noiseGen_.next().value;
+    } while (!this.isValid(x + noise));
+    return x + noise;
+  }
 }
 
 class IndividualBase {
@@ -22,7 +59,7 @@ class IndividualBase {
     }
   }
 
-  getValue() {
+  getValues() {
     throw new Error("not implemented");
   }
 
@@ -55,7 +92,7 @@ class Configuration {
   constructor() {
     this.populationSize = 100;
     this.mateFraction =  0.1;
-    this.minGenerations = 10;
+    this.minGenerations = 100;
     this.maxGenerations = 10000;
   }
 
@@ -123,7 +160,7 @@ class Simulator {
       }
       newMax = this.population_[0].getFitnessScore();
     } while (
-      this.time_ < this.config_.maxGenerations && (newMax - prevMax) > 1e-3);
+      this.time_ < this.config_.maxGenerations && (newMax - prevMax) > 0);
   }
 
   initialize() {
@@ -193,46 +230,5 @@ class Simulator {
       }
     }
     this.time_++;
-  }
-
-
-  /////////////////////////////////////////////////
-
-  elapseOneTimeInterval() {
-    // Pick a random 10% of the population to reproduce.
-    let indicesSet = new Set();
-    while (indicesSet.size < this.populationSize_ / 10) {
-      indicesSet.add(Math.floor(Math.random() * this.populationSize_));
-    }
-    let indices = Array.from(indicesSet);
-    indices.sort(function(a, b) { return a - b; });
-    let parents = []; // parents in descending fitness.
-    for (let index of indices) {
-      parents.push(this.population_[index]);
-    }
-
-    for (let i = 0; i < this.populationSize_ / 10; i = i + 2) {
-      let parent1 = this.population_[i];
-      let parent2 = this.population_[i+1];
-      let [child1, child2] = this.life_.reproduce(parent1, parent2);
-      this.addIndividual(child1);
-      this.addIndividual(child2);
-    }
-  }
-
-  elapseTimeUntilConvergence() {
-    let time = 0;
-    let maxFitnessScore = this.life_.getFitnessScore(this.population_[0]);
-    let newMaxFitnessScore = maxFitnessScore;
-    console.log(`${time}: ${this.population_[0].value} ${maxFitnessScore}`);
-    do {
-      maxFitnessScore = newMaxFitnessScore;
-      for (let i = 0; i < 10; i++) {
-        time++;
-        this.elapseOneTimeInterval();
-        newMaxFitnessScore = this.life_.getFitnessScore(this.population_[0]);
-        console.log(`${time}: ${this.population_[0].value} ${newMaxFitnessScore}`);
-      }
-    } while ((newMaxFitnessScore - maxFitnessScore) > 1e-6 && time < 100);
   }
 }

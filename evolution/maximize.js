@@ -1,52 +1,72 @@
 class Individual {
-  constructor(isValidFn, fn, value) {
-    this.isValidFn_ = isValidFn;
-    this.fn_ = fn;
+  constructor(creator, ...values) {
+    this.creator_ = creator;
 
-    if (value === undefined) {
-      this.value_ = Math.random();
+    this.values_ = new Array(creator.intervals_.length);
+    if (values === undefined || values.length === 0) {
+      for (let i = 0; i < creator.intervals_.length; i++) {
+        this.values_[i] = creator.intervals_[i].sample();
+        if (!this.creator_.intervals_[i].isValid(this.values_[i])) {
+          throw new Error(`Invalid value: ${this.values_[i]}`);
+        }
+      }
     } else {
-      this.value_ = value;
+      if (values.length != creator.intervals_.length) {
+        throw new Error("Mismatch in number of values");
+      }
+      for (let i = 0; i < creator.intervals_.length; i++) {
+        let interval = creator.intervals_[i];
+        if (interval.isValid(values[i])) {
+          this.values_[i] = values[i];
+        } else {
+          throw new Error(`Invalid value: ${values[i]}`);
+        }
+      }
     }
-    if (!this.isValidFn_(this.value_)) {
-      throw new Error("invalid value");
-    }
-
-    this.normalGen_ = createNormalGen(0, 0.1);
   }
 
-  getValue() {
-    return this.value_;
+  getValues() {
+    return this.values_;
   }
 
   getFitnessScore() {
-    return this.fn_(this.getValue());
+    return this.creator_.fitnessFn_(...this.values_);
   }
 
   mateWith(partner) {
     let children = new Array(1);
-    children[0] = new Individual(
-      this.isValidFn_, this.fn_, (this.getValue() + partner.getValue()) / 2);
+    let childValues = new Array(this.values_.length);
+    for (let i = 0; i < this.values_.length; i++) {
+      if (!this.creator_.intervals_[i].isValid(this.values_[i])) {
+        throw new Error(`Invalid value: ${this.values_[i]}`);
+      }
+      if (!this.creator_.intervals_[i].isValid(partner.values_[i])) {
+        throw new Error(`Invalid value: ${partner.values_[i]}`);
+      }
+      childValues[i] = (this.values_[i] + partner.values_[i]) / 2;
+    }
+    children[0] = new Individual(this.creator_, ...childValues);
     return children;
   }
 
   mutate() {
-    let mutatedValue;
-    do {
-      mutatedValue = this.getValue() + this.normalGen_.next().value;
-    } while (!this.isValidFn_(mutatedValue));
-    this.value_ = mutatedValue;
+    for (let i = 0; i < this.values_.length; i++) {
+      this.values_[i] = this.creator_.intervals_[i].mutate(this.values_[i]);
+    }
     return this;
   }
 }
 
 class Creator {
-  constructor(isValidFn, fn) {
-    this.isValidFn_ = isValidFn;
-    this.fn_ = fn;
+  constructor(fitnessFn, ...intervals) {
+    this.fitnessFn_ = fitnessFn;
+    if (intervals.length < 1) {
+      throw new Error("Need at least 1 interval");
+    }
+    this.intervals_ = intervals;
   }
 
   createIndividual() {
-    return new Individual(this.isValidFn_, this.fn_);
+    return new Individual(this);
   }
 }
